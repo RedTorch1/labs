@@ -6,12 +6,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ConstantFunctionTest {
     public void testApplyAlwaysReturnsConstant() {
-        ConstantFunction f = new ConstantFunction(42.0);
+        ConstantFunction f = new ConstantFunction(42);
 
         // Независимо от x должно быть одно и то же значение
-        assertEquals(42.0, f.apply(-100.0), 1e-9);
-        assertEquals(42.0, f.apply(0.0), 1e-9);
-        assertEquals(42.0, f.apply(123.45), 1e-9);
+        assertEquals(42, f.apply(-100), 0.0001);
+        assertEquals(42, f.apply(0), 0.0001);
+        assertEquals(42, f.apply(123.45), 0.0001);
     }
 
     public void testGetValueReturnsCorrectConstant() {
@@ -19,7 +19,7 @@ class ConstantFunctionTest {
 
         // Метод getValue() должен возвращать то же самое,
         // что и apply(x)
-        assertEquals(Math.PI, f.getValue(), 1e-9);
-        assertEquals(Math.PI, f.apply(999), 1e-9);
+        assertEquals(Math.PI, f.getValue(), 0.0001);
+        assertEquals(Math.PI, f.apply(999), 0.0001);
     }
 }

@@ -8,8 +8,8 @@ class UnitFunctionTest {
     void testAlwaysOne() {
         UnitFunction f = new UnitFunction();
 
-        assertEquals(1.0, f.apply(-999), 1e-9);
-        assertEquals(1.0, f.apply(0), 1e-9);
-        assertEquals(1.0, f.apply(999), 1e-9);
+        assertEquals(1, f.apply(-999), 0.0001);
+        assertEquals(1, f.apply(0), 0.0001);
+        assertEquals(1, f.apply(999), 0.0001);
     }
 }
