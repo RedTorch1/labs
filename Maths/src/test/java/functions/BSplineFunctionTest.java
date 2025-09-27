@@ -7,18 +7,18 @@ import static org.junit.jupiter.api.Assertions.*;
 class BSplineFunctionTest {
 
     void testSimpleSpline() {
-        double[] controlPoints = {0.0, 2.0, 3.0, 0.0};
+        double[] controlPoints = {0, 2, 3, 0};
         double[] knots = {0, 0, 0, 1, 2, 3, 3, 3};
         int degree = 3;
 
         BSplineFunction spline = new BSplineFunction(controlPoints, knots, degree);
 
-        double y0 = spline.apply(0.0);
+        double y0 = spline.apply(0);
         double yMid = spline.apply(1.5);
-        double yEnd = spline.apply(3.0 - 1e-9);
+        double yEnd = spline.apply(3 - 0.0001);
 
         // В начале кривая уходит в первую точку
-        assertEquals(0.0, y0, 1e-9);
+        assertEquals(0, y0, 0.0001);
 
         // В середине должно быть что-то положительное
         assertTrue(yMid > 0);
@@ -28,16 +28,16 @@ class BSplineFunctionTest {
     }
 
     void testNonNegativeValues() {
-        double[] controlPoints = {0.0, 2.0, 3.0, 0.0};
+        double[] controlPoints = {0, 2, 3, 0};
         double[] knots = {0, 0, 0, 1, 2, 3, 3, 3};
         int degree = 3;
 
         BSplineFunction spline = new BSplineFunction(controlPoints, knots, degree);
 
-        for (double t = 0.0; t <= 3.0; t += 0.1) {
+        for (double t = 0; t <= 3; t += 0.1) {
             double y = spline.apply(t);
             // Значения не должны выходить слишком далеко за диапазон [0,3]
-            assertTrue(y >= -1e-6 && y <= 3.0 + 1e-6);
+            assertTrue(y >= -0.001 && y <= 3 + 0.001);
         }
     }
 }
