@@ -12,8 +12,8 @@ public class AndThenTest {
         MathFunction composite = f.andThen(g);
 
         // Должно совпадать с g(f(x)) = x^2
-        assertEquals(25.0, composite.apply(5.0), 1e-9);
-        assertEquals(9.0, composite.apply(-3.0), 1e-9);
+        assertEquals(25, composite.apply(5), 0.0001);
+        assertEquals(9, composite.apply(-3), 0.0001);
     }
 
     public void testSquareThenIdentity() {
@@ -23,7 +23,7 @@ public class AndThenTest {
         MathFunction composite = f.andThen(g);
 
         // Должно совпадать с g(f(x)) = f(x) = x^2
-        assertEquals(16.0, composite.apply(4.0), 1e-9);
+        assertEquals(16, composite.apply(4), 0.0001);
     }
 
     public void testChainOfFunctions() {
@@ -34,18 +34,18 @@ public class AndThenTest {
         // (f andThen g andThen h)(x) = h(g(f(x))) = 1
         MathFunction composite = f.andThen(g).andThen(h);
 
-        assertEquals(1.0, composite.apply(100), 1e-9);
-        assertEquals(1.0, composite.apply(-999), 1e-9);
+        assertEquals(1, composite.apply(100), 0.0001);
+        assertEquals(1, composite.apply(-999), 0.0001);
     }
 
     public void testWithConstantFunction() {
-        MathFunction f = new ConstantFunction(3.0); // f(x) = 3
+        MathFunction f = new ConstantFunction(3); // f(x) = 3
         MathFunction g = new SqrFunction();         // g(x) = x^2
 
         MathFunction composite = f.andThen(g);
 
         // (f andThen g)(x) = g(f(x)) = (3)^2 = 9
-        assertEquals(9.0, composite.apply(-5), 1e-9);
-        assertEquals(9.0, composite.apply(100), 1e-9);
+        assertEquals(9, composite.apply(-5), 0.0001);
+        assertEquals(9, composite.apply(100), 0.0001);
     }
 }
