@@ -1,6 +1,6 @@
 package functions;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction{
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable{
     private Node head;
     protected int count; //число элементов
     private void addNode(double x, double y) { //добавление элемента в конец
@@ -129,5 +129,22 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction{
         Node leftNode=getNode(floorIndex-1);
         Node rightNode=getNode(floorIndex);
         return interpolate(x,leftNode.x,rightNode.x,leftNode.y,rightNode.y);
+    }
+
+    //Ремувабл
+    public void remove(int index)
+    {
+        if(count<=1) {throw new IllegalStateException("Can not remove last node");}
+        if(index<0||index>=count) {throw new IndexOutOfBoundsException("Index out of bounds: "+index);}
+        Node nodeToRemove=getNode(index);
+        if(count==1) {head=null;}
+        else {
+            nodeToRemove.prev.next=nodeToRemove.next;
+            nodeToRemove.next.prev=nodeToRemove.prev; //Я в эти игры уже играл
+            if (index==0) {head=nodeToRemove.next;}
+        }
+        nodeToRemove.next=null;
+        nodeToRemove.prev=null;
+        count--; //its so over
     }
 }
