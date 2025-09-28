@@ -2,7 +2,7 @@ package functions;
 
 import java.util.Arrays;
 
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Removable{
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable{
     private double[] xValues;
     private double[] yValues;
 
@@ -104,5 +104,29 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         this.xValues = newX;
         this.yValues = newY;
         this.count--;
+    }
+    public void insert(double x, double y)
+    {
+        //Проверяем есть ли x уже
+        int existingIndex=indexOfX(x);
+        if(existingIndex!=-1) {setY(existingIndex,y);return;} //Если есть, то меняем
+        //Создаём новые массивы большего размера
+        double[] newX=new double[count+1];
+        double[] newY=new double[count+1];
+        //Найдём позицию вставки
+        int insertIndex=0;
+        while(insertIndex<count&&xValues[insertIndex]<x) {insertIndex++;}
+        //Копировальный центр (до позиции вставки)
+        System.arraycopy(xValues,0,newX,0,insertIndex);
+        System.arraycopy(yValues,0,newY,0,insertIndex);
+        //Вставка нового
+        newX[insertIndex]=x;
+        newY[insertIndex]=y;
+        //Копировальный центр(продолжение)
+        System.arraycopy(xValues,insertIndex,newX,insertIndex+1,count-insertIndex);
+        System.arraycopy(yValues,insertIndex,newY,insertIndex+1,count-insertIndex);
+        this.xValues=newX;
+        this.yValues=newY;
+        count++;
     }
 }
