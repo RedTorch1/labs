@@ -1,0 +1,39 @@
+package functions;
+
+abstract public class AbstractTabulatedFunction {
+    protected int count; // число табулированных точек
+    // Методы, которые нужно будет реализовать в наследниках
+    abstract int getCount();
+    abstract double getX(int index);
+    abstract double getY(int index);
+    abstract void setY(int index, double value);
+    abstract int indexOfX(double x);
+    abstract int indexOfY(double y);
+    abstract double leftBound();
+    abstract double rightBound();
+    protected abstract int floorIndexOfX(double x);
+    protected abstract double extrapolateLeft(double x);
+    protected abstract double extrapolateRight(double x);
+    protected abstract double interpolate(double x, int floorIndex);
+
+    // Универсальный метод интерполяции (общая формула)
+    protected double interpolate(double x, double leftX, double rightX, double leftY, double rightY) {
+        return leftY + (rightY - leftY) * (x - leftX) / (rightX - leftX);
+    }
+    
+    public double apply(double x) {
+        if (x < leftBound()) {
+            return extrapolateLeft(x);
+        }
+        if (x > rightBound()) {
+            return extrapolateRight(x);
+        }
+        int index = indexOfX(x);
+        if (index != -1) {
+            return getY(index);
+        }
+        int floorIndex = floorIndexOfX(x);
+        return interpolate(x, floorIndex);
+    }
+
+}
