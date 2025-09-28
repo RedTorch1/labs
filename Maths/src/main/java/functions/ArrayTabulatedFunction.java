@@ -2,7 +2,7 @@ package functions;
 
 import java.util.Arrays;
 
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction {
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Removable{
     private double[] xValues;
     private double[] yValues;
 
@@ -82,5 +82,27 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction {
         return interpolate(x,
                 xValues[floorIndex], xValues[floorIndex + 1],
                 yValues[floorIndex], yValues[floorIndex + 1]);
+    }
+
+    public void remove(int index) {
+        if (count <= 1) {
+            throw new IllegalStateException("Нельзя удалить последнюю точку");
+        }
+        if (index < 0 || index >= count) {
+            throw new IndexOutOfBoundsException("Некорректный индекс");
+        }
+
+        double[] newX = new double[count - 1];
+        double[] newY = new double[count - 1];
+
+        System.arraycopy(xValues, 0, newX, 0, index);
+        System.arraycopy(xValues, index + 1, newX, index, count - index - 1);
+
+        System.arraycopy(yValues, 0, newY, 0, index);
+        System.arraycopy(yValues, index + 1, newY, index, count - index - 1);
+
+        this.xValues = newX;
+        this.yValues = newY;
+        this.count--;
     }
 }
