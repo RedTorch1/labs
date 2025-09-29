@@ -1,6 +1,6 @@
 package functions;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable{
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, Insertable{
     private Node head;
     protected int count; //число элементов
     private void addNode(double x, double y) { //добавление элемента в конец
@@ -146,5 +146,46 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         nodeToRemove.next=null;
         nodeToRemove.prev=null;
         count--; //its so over
+    }
+
+    public void insert(double x, double y) {
+        // если список пуст — просто добавить
+        if (head == null) {
+            addNode(x, y);
+            return;
+        }
+
+        Node current = head;
+        for (int i = 0; i < count; i++) {
+            // если x совпал — заменить y
+            if (current.x == x) {
+                current.y = y;
+                return;
+            }
+
+            // если нашли место для вставки
+            if (x < current.x) {
+                Node newNode = new Node(x, y);
+
+                // связываем с окружением
+                newNode.prev = current.prev;
+                newNode.next = current;
+                current.prev.next = newNode;
+                current.prev = newNode;
+
+                // если вставляем перед head — обновляем head
+                if (current == head) {
+                    head = newNode;
+                }
+
+                count++;
+                return;
+            }
+
+            current = current.next;
+        }
+
+        // если x больше всех — вставляем в конец
+        addNode(x, y);
     }
 }
