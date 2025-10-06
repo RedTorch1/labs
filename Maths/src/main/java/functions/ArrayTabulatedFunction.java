@@ -8,7 +8,8 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
     // Конструктор по массивам
     public ArrayTabulatedFunction(double[] xValues, double[] yValues) {
-        if (xValues.length != yValues.length || xValues.length < 2) {
+        if (xValues.length <2) { throw new IllegalArgumentException("Length of list lower than minimum (2)"); }
+        if (xValues.length != yValues.length) {
             throw new IllegalArgumentException("Некорректные массивы");
         }
         this.count = xValues.length;
@@ -40,11 +41,23 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
     public int getCount() { return count; }
 
-    public double getX(int index) { return xValues[index]; }
+    public double getX(int index) {
+        if (index<0 || index>=count) {
+            throw new IllegalArgumentException("Index out of range");
+        }
+        return xValues[index]; }
 
-    public double getY(int index) { return yValues[index]; }
+    public double getY(int index) {
+        if (index<0 || index>=count) {
+            throw new IllegalArgumentException("Index out of range");
+        }
+        return yValues[index]; }
 
-    public void setY(int index, double value) { yValues[index] = value; }
+    public void setY(int index, double value) {
+        if (index<0||index>=count) {
+            throw new IllegalArgumentException("Index out of range");
+        }
+        yValues[index] = value; }
 
     public int indexOfX(double x) {
         for (int i = 0; i < count; i++) if (xValues[i] == x) return i;
@@ -61,7 +74,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     public double rightBound() { return xValues[count - 1]; }
 
     protected int floorIndexOfX(double x) {
-        if (x < xValues[0]) return 0;
+        if (x < xValues[0]) throw new IllegalArgumentException("X is lower than left border");
         if (x > xValues[count - 1]) return count - 1;
         for (int i = 0; i < count - 1; i++) {
             if (xValues[i] <= x && x < xValues[i + 1]) return i;

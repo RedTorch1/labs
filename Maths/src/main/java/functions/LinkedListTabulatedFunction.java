@@ -35,8 +35,8 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     //Конструктор с массивами значений иксов и игриков
     public LinkedListTabulatedFunction(double[] xValues, double[] yValues)
     {
+        if (xValues.length<2) {throw new IllegalStateException("Length of table lower than minimum(2)"); }
         if (xValues.length!=yValues.length) {throw new IllegalArgumentException("Arrays must be same length");}
-        if (xValues.length==0) {throw new IllegalArgumentException("Arrays must not be empty");}
 
         for(int i=1; i<xValues.length;i++) //Проверка xValues
         {
@@ -53,7 +53,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     //Конструктор с четыремя параметрами
     public LinkedListTabulatedFunction(MathFunction src, double xFrom, double xTo, int count)
     {
-        if (count<=0) {throw new IllegalArgumentException("Count must be positive");}
+        if (count<2) {throw new IllegalArgumentException("Length of table lower than minimum(2)");}
         if(xFrom>xTo)
         {
             double temp = xFrom;
@@ -75,7 +75,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         }
     }
     private Node getNode(int index) {
-        if (index<0||index>=count) {throw new IndexOutOfBoundsException("Index: "+index+" , Size: "+count);}
+        if (index<0||index>=count) {throw new IllegalArgumentException("Index out of range");}
         Node cur=head;
         for (int i=0;i<index;i++) {cur=cur.next;}
         return cur;
@@ -83,8 +83,8 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     //Вот с этого момента реализация пошла
     public int getCount() {return count;}
-    public double getX(int index) {return getNode(index).x;}
-    public double getY(int index) {return getNode(index).y;}
+    public double getX(int index) {return getNode(index).x;} //Тут кстати не надо добавлять выкидок
+    public double getY(int index) {return getNode(index).y;} //Потому что в getNode есть
     public void setY(int index, double value) {getNode(index).y=value;}
     public double leftBound() {
         if (head==null) {throw new IllegalStateException("List is empty");}
@@ -95,7 +95,8 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         return head.prev.x;
     }
     public int indexOfX(double x) {
-        if (head==null) {return -1;}
+        if (head==null) {throw new IllegalStateException("List is empty");}
+        if (x<head.x) {throw new IllegalArgumentException("x can't be lower than left border.");}
         Node cur=head;
         for (int i=0; i<count;i++)
         {
