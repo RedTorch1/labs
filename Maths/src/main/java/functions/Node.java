@@ -1,4 +1,4 @@
-/*package functions;
+package functions;
 
 public class Node {
     public Node next;
@@ -11,5 +11,4 @@ public class Node {
         this.x=x;
         this.y=y;
     }
-}*/
-//Ну удалять жалко но пусть живёт в наших сердцах(и комментах)
+}
