@@ -2,7 +2,7 @@ package functions;
 
 import java.util.Iterator;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, Insertable{
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, Insertable,Iterable<Point>{
     public class Node { //Добро пожаловать домой
         public Node next;
         public Node prev;
@@ -209,6 +209,25 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     public Iterator<Point> iterator()
     {
-        throw new UnsupportedOperationException("Iterator is not supported by default. Override iterator() in subclass.");
+        return new Iterator<Point>() {
+            private Node node = head;
+            private int currentIndex = 0;
+            public boolean hasNext() {
+                return node != null && currentIndex < count;
+            }
+            public Point next() {
+                if (!hasNext()) {
+                    throw new java.util.NoSuchElementException("No more elements in the tabulated function");
+                }
+                Point point = new Point(node.x, node.y);
+                node = node.next;
+                currentIndex++;
+                //Если прошли полный круг, обнуляем node
+                if (currentIndex == count) {
+                    node = null;
+                }
+                return point;
+            }
+        };
     }
 }
