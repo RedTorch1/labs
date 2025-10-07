@@ -1,6 +1,7 @@
 package functions;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable{
     private double[] xValues;
@@ -12,6 +13,10 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         if (xValues.length != yValues.length) {
             throw new IllegalArgumentException("Некорректные массивы");
         }
+
+        checkLengthIsTheSame(xValues, yValues);
+        checkSorted(xValues);
+
         this.count = xValues.length;
         this.xValues = Arrays.copyOf(xValues, count);
         this.yValues = Arrays.copyOf(yValues, count);
@@ -141,5 +146,10 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         this.xValues=newX;
         this.yValues=newY;
         count++;
+    }
+
+    public Iterator<Point> iterator()
+    {
+        throw new UnsupportedOperationException("Iterator is not supported by default. Override iterator() in subclass.");
     }
 }

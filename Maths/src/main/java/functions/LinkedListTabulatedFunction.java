@@ -1,5 +1,7 @@
 package functions;
 
+import java.util.Iterator;
+
 public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, Insertable{
     public class Node { //Добро пожаловать домой
         public Node next;
@@ -37,6 +39,9 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     {
         if (xValues.length<2) {throw new IllegalStateException("Length of table lower than minimum(2)"); }
         if (xValues.length!=yValues.length) {throw new IllegalArgumentException("Arrays must be same length");}
+
+        checkLengthIsTheSame(xValues, yValues);
+        checkSorted(xValues);
 
         for(int i=1; i<xValues.length;i++) //Проверка xValues
         {
@@ -200,5 +205,10 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
         // если x больше всех — вставляем в конец
         addNode(x, y);
+    }
+
+    public Iterator<Point> iterator()
+    {
+        throw new UnsupportedOperationException("Iterator is not supported by default. Override iterator() in subclass.");
     }
 }
