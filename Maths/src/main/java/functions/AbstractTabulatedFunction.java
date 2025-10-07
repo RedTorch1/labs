@@ -1,5 +1,8 @@
 package functions;
 
+import exceptions.ArrayIsNotSortedException;
+import exceptions.DifferentLengthOfArraysException;
+
 abstract public class AbstractTabulatedFunction {
     protected int count; // число табулированных точек
     // Методы, которые нужно будет реализовать в наследниках
@@ -34,6 +37,19 @@ abstract public class AbstractTabulatedFunction {
         }
         int floorIndex = floorIndexOfX(x);
         return interpolate(x, floorIndex);
+    }
+
+    static void checkLengthIsTheSame(double[] xValues, double[] yValues)
+    {
+        if (xValues.length != yValues.length)
+            throw new DifferentLengthOfArraysException();
+    }
+
+    static void checkSorted(double[] xValues)
+    {
+        for (int i=1;i<xValues.length;i++)
+            if (xValues[i] <= xValues[i-1])
+                throw new ArrayIsNotSortedException();
     }
 
 }
