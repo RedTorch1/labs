@@ -2,11 +2,11 @@ package functions;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.lang.Iterable;
 
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable{
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable, Iterable<Point>{
     private double[] xValues;
     private double[] yValues;
-
     // Конструктор по массивам
     public ArrayTabulatedFunction(double[] xValues, double[] yValues) {
         if (xValues.length <2) { throw new IllegalArgumentException("Length of list lower than minimum (2)"); }
@@ -148,8 +148,20 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         count++;
     }
 
-    public Iterator<Point> iterator()
-    {
-        throw new UnsupportedOperationException("Iterator is not supported by default. Override iterator() in subclass.");
+    public java.util.Iterator<Point> iterator() {
+        return new java.util.Iterator<Point>() {
+            private int i = 0;
+
+            public boolean hasNext() {
+                return i < count;
+            }
+
+            public Point next() {
+                if (!hasNext()) throw new java.util.NoSuchElementException("No more elements in the tabulated function");
+                Point p = new Point(xValues[i], yValues[i]);
+                i++;
+                return p;
+            }
+        };
     }
 }
