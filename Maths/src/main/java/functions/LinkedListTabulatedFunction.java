@@ -215,8 +215,9 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         return new Iterator<Point>() {
             private Node node = head;
             private int currentIndex = 0;
+            private final int totalCount=count;
             public boolean hasNext() {
-                return node != null && currentIndex < count;
+                return node != null && currentIndex < totalCount;
             }
             public Point next() {
                 if (!hasNext()) {

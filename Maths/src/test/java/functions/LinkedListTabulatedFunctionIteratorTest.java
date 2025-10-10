@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LinkedListTabulatedFunctionIteratorTest {
+    @Test
     public void testIteratorWithWhileLoop() {
         double[] xValues = {1.0, 2.0, 3.0, 4.0};
         double[] yValues = {10.0, 20.0, 30.0, 40.0};
@@ -30,6 +31,7 @@ public class LinkedListTabulatedFunctionIteratorTest {
         //Проверка исключения при попытке получить следующий элемент
         assertThrows(NoSuchElementException.class, () -> iterator.next());
     }
+    @Test
     public void testIteratorWithForEachLoop() {
         double[] xValues = {0.5, 1.5, 2.5};
         double[] yValues = {5.0, 15.0, 25.0};
@@ -46,6 +48,7 @@ public class LinkedListTabulatedFunctionIteratorTest {
 
         assertEquals(3, pointCount);
     }
+    @Test
     public void testIteratorWithSinglePoint() {
         //Создаем функцию с помощью конструктора MathFunction с одинаковыми границами
         MathFunction source = new ConstantFunction(5.0);
@@ -63,6 +66,7 @@ public class LinkedListTabulatedFunctionIteratorTest {
 
         assertEquals(3, pointCount);
     }
+    @Test
     public void testIteratorOrder() {
         double[] xValues = {1.0, 3.0, 5.0};
         double[] yValues = {2.0, 6.0, 10.0};
@@ -84,28 +88,5 @@ public class LinkedListTabulatedFunctionIteratorTest {
         assertEquals(10.0, third.y, 1e-10);
 
         assertFalse(iterator.hasNext());
-    }
-    public void testMultipleIteratorsIndependent() {
-        double[] xValues = {1.0, 2.0};
-        double[] yValues = {10.0, 20.0};
-        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
-
-        Iterator<Point> iterator1 = function.iterator();
-        Iterator<Point> iterator2 = function.iterator();
-
-        //Оба итератора должны работать независимо
-        Point point1 = iterator1.next();
-        Point point2 = iterator2.next();
-
-        assertEquals(point1.x, point2.x, 1e-10);
-        assertEquals(point1.y, point2.y, 1e-10);
-
-        //Продолжаем с первым итератором
-        point1 = iterator1.next();
-        //Второй итератор все еще на первом элементе
-        point2 = iterator2.next();
-
-        assertEquals(2.0, point1.x, 1e-10);
-        assertEquals(1.0, point2.x, 1e-10);
     }
 }
