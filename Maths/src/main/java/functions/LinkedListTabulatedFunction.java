@@ -1,9 +1,12 @@
 package functions;
 
 import java.util.Iterator;
+import java.io.Serializable;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements TabulatedFunction, Removable, Insertable,Iterable<Point>{
-    public class Node { //Добро пожаловать домой
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements TabulatedFunction, Removable, Insertable,Iterable<Point>, Serializable{
+    private static final long serialVersionUID=1L;
+    public class Node implements Serializable{ //Добро пожаловать домой
+        private static final long sertialVersionUID=2L;
         public Node next;
         public Node prev;
         public double x;
