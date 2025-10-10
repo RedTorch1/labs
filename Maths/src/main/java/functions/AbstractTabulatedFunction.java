@@ -51,5 +51,14 @@ abstract public class AbstractTabulatedFunction {
             if (xValues[i] <= xValues[i-1])
                 throw new ArrayIsNotSortedException();
     }
-
+    @Override
+    public String toString() {
+        StringBuilder sb=new StringBuilder();
+        sb.append(getClass().getSimpleName()).append(" size = ").append(getCount()).append("\n");
+        for (int i = 0; i<getCount(); i++)
+        {
+            sb.append("[").append(getX(i)).append("; ").append(getY(i)).append("]\n");
+        }
+        return sb.toString();
+    }
 }
