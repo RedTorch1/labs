@@ -2,6 +2,10 @@ package io;
 
 import functions.*;
 import java.io.*;
+import functions.factory.TabulatedFunctionFactory;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.Locale;
 
 public final class FunctionsIO {
     private FunctionsIO() { throw new UnsupportedOperationException(); }
@@ -25,5 +29,26 @@ public final class FunctionsIO {
             dataOutputStream.writeDouble(point.y);
         }
         dataOutputStream.flush();
+    }
+
+    public static TabulatedFunction readTabulatedFunction(BufferedReader reader, TabulatedFunctionFactory factory) throws IOException {
+        String line = reader.readLine();
+        if (line == null) throw new IOException("No data");
+        int count = Integer.parseInt(line.trim());
+        double[] xs = new double[count];
+        double[] ys = new double[count];
+        NumberFormat nf = NumberFormat.getInstance(Locale.forLanguageTag("ru"));
+        for (int i = 0; i < count; i++) {
+            line = reader.readLine();
+            if (line == null) throw new IOException("Unexpected EOF");
+            String[] parts = line.trim().split("\\s+");
+            try {
+                xs[i] = nf.parse(parts[0]).doubleValue();
+                ys[i] = nf.parse(parts[1]).doubleValue();
+            } catch (ParseException e) {
+                throw new IOException(e);
+            }
+        }
+        return factory.create(xs, ys);
     }
 }
