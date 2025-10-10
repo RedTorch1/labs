@@ -15,4 +15,15 @@ public final class FunctionsIO {
         }
         pw.flush();
     }
+    public static void writeTabulatedFunction(BufferedOutputStream outputStream, TabulatedFunction function) throws IOException{
+        DataOutputStream dataOutputStream =new DataOutputStream(outputStream);
+        int count=function.getCount();
+        dataOutputStream.writeInt(count);
+        for (Point point : function)
+        {
+            dataOutputStream.writeDouble(point.x);
+            dataOutputStream.writeDouble(point.y);
+        }
+        dataOutputStream.flush();
+    }
 }
