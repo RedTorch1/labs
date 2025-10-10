@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.lang.Iterable;
 
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable, Iterable<Point>{
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements TabulatedFunction, Insertable, Removable, Iterable<Point>{
     private double[] xValues;
     private double[] yValues;
     // Конструктор по массивам

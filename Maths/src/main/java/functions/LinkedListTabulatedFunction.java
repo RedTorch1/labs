@@ -2,7 +2,7 @@ package functions;
 
 import java.util.Iterator;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, Insertable,Iterable<Point>{
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements TabulatedFunction, Removable, Insertable,Iterable<Point>{
     public class Node { //Добро пожаловать домой
         public Node next;
         public Node prev;
