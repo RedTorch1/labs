@@ -43,6 +43,7 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction{
     }
 
     //Синхронизируем и итератор
+    //Дэм поторопился получается ладно ща перепишем
     public synchronized Iterator<Point> iterator() {
         //на всякий случай делаю копии точек
         Point[] points = new Point[function.getCount()];
@@ -52,10 +53,10 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction{
         return new Iterator<Point>() {
             private int currentIndex=0;
             private final Point[] pointArray=points;
-            public synchronized boolean hasNext() {
-                return currentIndex<points.length;
+            public boolean hasNext() {
+                return currentIndex<pointArray.length;
             }
-            public synchronized Point next() {
+            public Point next() {
                 if (!hasNext()) {
                     throw new java.util.NoSuchElementException();
                 }
