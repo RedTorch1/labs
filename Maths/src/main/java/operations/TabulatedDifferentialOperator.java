@@ -1,8 +1,12 @@
 package operations;
+
 import functions.Point;
 import functions.TabulatedFunction;
 import functions.factory.TabulatedFunctionFactory;
 import functions.factory.ArrayTabulatedFunctionFactory;
+import concurrent.SynchronizedTabulatedFunction;
+
+
 public class TabulatedDifferentialOperator implements DifferentialOperator<TabulatedFunction>{
     private TabulatedFunctionFactory factory;
     public TabulatedDifferentialOperator(TabulatedFunctionFactory factory) {
@@ -34,5 +38,17 @@ public class TabulatedDifferentialOperator implements DifferentialOperator<Tabul
             else {yValues[i]=(points[i+1].y-points[i-1].y)/(points[i+1].x-points[i-1].x);} //центр центр
         }
         return factory.create(xValues,yValues); //Создаём табу функцию через фабричку
+    }
+    public TabulatedFunction deriveSynchronously(TabulatedFunction function) {
+        SynchronizedTabulatedFunction syncFunction;
+
+        if (function instanceof SynchronizedTabulatedFunction) {
+            syncFunction = (SynchronizedTabulatedFunction) function;
+        }
+        else {
+            syncFunction = new SynchronizedTabulatedFunction(function);
+        }
+
+        return syncFunction.doSynchronously(func -> this.derive(func));
     }
 }
