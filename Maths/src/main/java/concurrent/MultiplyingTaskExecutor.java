@@ -3,11 +3,18 @@ package concurrent;
 import functions.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MultiplyingTaskExecutor {
+    private static final Logger logger = LoggerFactory.getLogger(MultiplyingTaskExecutor.class);
+
     public static void main(String[] args) {
+        logger.info("Запуск MultiplyingTaskExecutor");
+
         MathFunction unit = new ConstantFunction(1); //Работает, как unitfunction
         TabulatedFunction function = new LinkedListTabulatedFunction(unit, 1, 1000, 1000);
+        logger.debug("Создана функция на основе UnitFunction");
 
         int threadsCount = 10;
         List<Thread> threads = new ArrayList<>();
@@ -18,20 +25,23 @@ public class MultiplyingTaskExecutor {
         }
 
         for (Thread t : threads) t.start();
+        logger.info("Все потоки умножения запущены");
 
         try {
             for (Thread t : threads) t.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.info("Все потоки успешно завершены");
+        }
+        catch (InterruptedException e) {
+            logger.error("Ошибка при ожидании потоков", e);
         }
 
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("Ошибка при ожидании потоков", e);
         }
 
-        System.out.println("All multiplying threads finished.");
+        logger.info("MultiplyingTaskExecutor завершил работу");
 
         for (int i = 0; i < 5; i++) {
             System.out.printf("[%d] x=%.3f y=%.3f%n", i, function.getX(i), function.getY(i));

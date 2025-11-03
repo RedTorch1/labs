@@ -6,8 +6,11 @@ import functions.factory.TabulatedFunctionFactory;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class FunctionsIO {
+    private static final Logger logger = LoggerFactory.getLogger(FunctionsIO.class);
     private FunctionsIO() { throw new UnsupportedOperationException(); }
 
     public static void writeTabulatedFunction(BufferedWriter writer, TabulatedFunction function) {
@@ -65,14 +68,19 @@ public final class FunctionsIO {
     }
 
     public static void serialize(BufferedOutputStream stream, TabulatedFunction function) throws IOException {
+        logger.debug("Начало сериализации функции типа {}", function.getClass().getSimpleName());
         ObjectOutputStream oos = new ObjectOutputStream(stream);
         oos.writeObject(function);
         oos.flush();
+        logger.info("Функция успешно сериализована");
     }
 
     public static TabulatedFunction deserialize(BufferedInputStream stream)
             throws IOException, ClassNotFoundException {
+        logger.debug("Начало десериализации функции");
         ObjectInputStream ois = new ObjectInputStream(stream);
-        return (TabulatedFunction) ois.readObject();
-    }
+        TabulatedFunction func = (TabulatedFunction) ois.readObject();
+        logger.info("Функция типа {} успешно десериализована", func.getClass().getSimpleName());
+        return func;
+    } //Класс подвергся логированию
 }

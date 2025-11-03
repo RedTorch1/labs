@@ -10,16 +10,20 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ArrayTabulatedFunctionSerialization {
+    private static final Logger logger = LoggerFactory.getLogger(ArrayTabulatedFunctionSerialization.class);
 
     public static void main(String[] args) {
+        logger.info("Запуск сериализации функций");
+
         File outDir = new File("output");
         if (!outDir.exists()) {
             boolean created = outDir.mkdirs();
             if (!created) {
-                System.err.println("Не удалось создать директорию output");
+                logger.error("Не удалось обнаружить файл");
             }
         }
 
@@ -37,20 +41,22 @@ public class ArrayTabulatedFunctionSerialization {
         TabulatedFunction secondDeriv = diffOperator.derive(firstDeriv);
 
         try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(outFile))) {
+            logger.debug("Открыт поток для записи");
+
             FunctionsIO.serialize(bos, original);
             FunctionsIO.serialize(bos, firstDeriv);
             FunctionsIO.serialize(bos, secondDeriv);
 
             bos.flush();
 
-            System.out.println("Сериализация выполнена в файл: " + outFile.getPath());
+            logger.info("Функции успешно сериализованы");
         } catch (IOException e) {
-            System.err.println("Ошибка при записи файла сериализации:");
-            e.printStackTrace(System.err);
-            return;
+            logger.error("Ошибка при сериализации функций", e);
         }
 
         try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(outFile))) {
+            logger.debug("Открыт поток для чтения");
+
             TabulatedFunction deserializedOriginal = FunctionsIO.deserialize(bis);
             TabulatedFunction deserializedFirst = FunctionsIO.deserialize(bis);
             TabulatedFunction deserializedSecond = FunctionsIO.deserialize(bis);
@@ -64,12 +70,12 @@ public class ArrayTabulatedFunctionSerialization {
             System.out.println("Вторая производная: ");
             System.out.println(deserializedSecond.toString());
 
+            logger.info("Десериализация завершена успешно");
         } catch (IOException e) {
-            System.err.println("IOException при чтении сериализованного файла:");
-            e.printStackTrace(System.err);
+            logger.error("Ошибка при десериализации функций", e);
         } catch (ClassNotFoundException e) {
-            System.err.println("ClassNotFoundException при десериализации:");
-            e.printStackTrace(System.err);
+            logger.error("Ошибка при десериализации функций", e);
         }
-    }
+        logger.info("Работа программы завершена");
+    } //Включено логирование
 }
