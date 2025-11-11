@@ -1,0 +1,3 @@
+Approach,InsertTime(ms),SelectTime(ms),UpdateTime(ms),DeleteTime(ms)
+Spring Data JPA,1576,937,1361,1039
+JDBC,976,560,705,725
