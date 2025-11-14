@@ -1,7 +1,0 @@
-CREATE TABLE IF NOT EXISTS func (
-  id SERIAL PRIMARY KEY,
-  user_id INT NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
-  name VARCHAR(200) NOT NULL,
-  expression TEXT,
-  created_at TIMESTAMP DEFAULT now()
-);
