@@ -1,4 +1,4 @@
-package entity;
+package ru.ssau.tk.maths.entity;
 
 import jakarta.persistence.*;
 

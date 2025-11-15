@@ -1,4 +1,4 @@
-package performance;
+package ru.ssau.tk.maths.performance;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +11,6 @@ class PerformanceJpaTest {
 
     @Test
     void runPerformance() throws Exception {
-        // use 10000 for real test; reduce to 2000 for CI or local quick test
-        runner.runAndSave(5000);
+        runner.runAndSave(10000);
     }
 }

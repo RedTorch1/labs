@@ -1,9 +1,9 @@
-package repository;
+package ru.ssau.tk.maths.repository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import entity.UserEntity;
+import ru.ssau.tk.maths.entity.UserEntity;
 
 import static org.junit.jupiter.api.Assertions.*;
 

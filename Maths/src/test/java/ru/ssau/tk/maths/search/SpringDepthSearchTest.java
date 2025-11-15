@@ -1,9 +1,9 @@
-package search;
+package ru.ssau.tk.maths.search;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import repository.UserRepository;
+import ru.ssau.tk.maths.repository.UserRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
 

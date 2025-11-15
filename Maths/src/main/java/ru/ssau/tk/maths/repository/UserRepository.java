@@ -1,7 +1,7 @@
-package repository;
+package ru.ssau.tk.maths.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import entity.UserEntity;
+import ru.ssau.tk.maths.entity.UserEntity;
 import java.util.List;
 
 public interface UserRepository extends JpaRepository<UserEntity, Long> {

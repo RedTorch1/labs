@@ -1,5 +1,0 @@
-Operation,Records,DAO (ms),Repository (ms)
-INSERT,10000,2877,2577
-SELECT,10000,21,11
-UPDATE,100,35,37
-DELETE,100,16,8
