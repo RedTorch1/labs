@@ -13,6 +13,13 @@
         </encoder>
     </appender>
 
+    <logger name="dao.impl.AdvancedFunctionDaoImpl" level="DEBUG"/>
+    <logger name="dao.impl.AdvancedPointDaoImpl" level="DEBUG"/>
+    <logger name="repository.manual.SearchSystemTest" level="INFO"/>
+    <logger name="repository.manual.SortingAndPerformanceTest" level="INFO"/>
+    <logger name="repository.manual.AdvancedVsBasicComparisonTest" level="INFO"/>
+    <logger name="dao.impl" level="WARN"/>
+
     <root level="INFO">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
