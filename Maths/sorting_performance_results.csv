@@ -3,7 +3,7 @@ Sorting,User by name ASC,0,1000,1
 Sorting,User by name DESC,0,1000,1
 Sorting,Function by name ASC,0,1000,1
 Sorting,Point by X ASC,0,1000,1
-Search,User single,120,1000,100
-Search,User multiple,1150,1000,10
-Search,Function hierarchy,634,1000,5
-Search,Point range,176,1000,100
+Search,User single,97,1000,100
+Search,User multiple,850,1000,10
+Search,Function hierarchy,777,1000,5
+Search,Point range,147,1000,100
