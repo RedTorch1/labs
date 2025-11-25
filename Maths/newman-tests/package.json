@@ -1,0 +1,17 @@
+{
+  "name": "lab6-newman-tests",
+  "version": "1.0.0",
+  "description": "Newman tests for Lab6 API",
+  "scripts": {
+    "test": "newman run collections/lab6-api-tests.postman_collection.json -e environments/lab6-env.postman_environment.json",
+    "test:html": "newman run collections/lab6-api-tests.postman_collection.json -e environments/lab6-env.postman_environment.json -r htmlextra",
+    "test:json": "newman run collections/lab6-api-tests.postman_collection.json -e environments/lab6-env.postman_environment.json -r json",
+    "test:cli": "newman run collections/lab6-api-tests.postman_collection.json -e environments/lab6-env.postman_environment.json --verbose",
+    "test:performance": "node scripts/run-performance.js"
+  },
+  "devDependencies": {
+    "newman": "^6.0.0",
+    "newman-reporter-htmlextra": "^1.23.1",
+    "newman-reporter-json": "^1.1.1"
+  }
+}

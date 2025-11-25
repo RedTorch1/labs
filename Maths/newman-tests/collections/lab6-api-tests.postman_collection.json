@@ -1,0 +1,876 @@
+{
+  "info": {
+    "name": "Lab6 API Tests",
+    "description": "API тесты для лабораторной работы №6",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/lab6",
+      "type": "string"
+    },
+    {
+      "key": "createdUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "createdFunctionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "createdPointId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/users",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "users"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Users API",
+      "item": [
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"User created successfully\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.response.to.have.jsonBody('data.username', 'testuser');",
+                  "});",
+                  "",
+                  "const responseData = pm.response.json();",
+                  "pm.collectionVariables.set(\"createdUserId\", responseData.data.id);",
+                  "console.log(\"Created user ID: \" + responseData.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"passwordHash\": \"testpass123\",\n  \"email\": \"test@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get all users success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.expect(pm.response.json().data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get user by ID success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.response.to.have.jsonBody('data.id', pm.collectionVariables.get(\"createdUserId\"));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{createdUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{createdUserId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Search users success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.expect(pm.response.json().data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/search?username=test",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "search"],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "test"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Update user success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.response.to.have.jsonBody('data.email', 'updated@example.com');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser_updated\",\n  \"passwordHash\": \"newpass123\",\n  \"email\": \"updated@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{createdUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{createdUserId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Delete user success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.response.to.have.jsonBody('data.message', 'User deleted successfully');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{createdUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{createdUserId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Functions API",
+      "item": [
+        {
+          "name": "Create User for Functions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseData = pm.response.json();",
+                  "pm.collectionVariables.set(\"createdUserId\", responseData.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"funcuser\",\n  \"passwordHash\": \"funcpass123\",\n  \"email\": \"func@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Function",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Function created successfully\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.response.to.have.jsonBody('data.name', 'Test Function');",
+                  "});",
+                  "",
+                  "const responseData = pm.response.json();",
+                  "pm.collectionVariables.set(\"createdFunctionId\", responseData.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Function\",\n  \"expression\": \"x^2 + 2*x + 1\",\n  \"userId\": {{createdUserId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/functions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "functions"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Functions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get all functions success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.expect(pm.response.json().data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/functions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "functions"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Function by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get function by ID success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.response.to.have.jsonBody('data.id', pm.collectionVariables.get(\"createdFunctionId\"));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/functions/{{createdFunctionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "functions", "{{createdFunctionId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Functions by User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get functions by user success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.expect(pm.response.json().data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/functions/user?userId={{createdUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "functions", "user"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{createdUserId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Functions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Search functions success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.expect(pm.response.json().data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/functions/search?name=Test",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "functions", "search"],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "Test"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Functions Hierarchy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get functions hierarchy success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.expect(pm.response.json().data).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/functions/hierarchy?userId={{createdUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "functions", "hierarchy"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{createdUserId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Sorted Functions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get sorted functions success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.expect(pm.response.json().data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/functions/sorted?userId={{createdUserId}}&sortBy=name&ascending=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "functions", "sorted"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{createdUserId}}"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "name"
+                },
+                {
+                  "key": "ascending",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Function",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Update function success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.response.to.have.jsonBody('data.expression', 'x^2 + 3*x + 2');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Test Function\",\n  \"expression\": \"x^2 + 3*x + 2\",\n  \"userId\": {{createdUserId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/functions/{{createdFunctionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "functions", "{{createdFunctionId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Points API",
+      "item": [
+        {
+          "name": "Create Point",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Point created successfully\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.response.to.have.jsonBody('data.xValue', 5);",
+                  "});",
+                  "",
+                  "const responseData = pm.response.json();",
+                  "pm.collectionVariables.set(\"createdPointId\", responseData.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"functionId\": {{createdFunctionId}},\n  \"xValue\": 5,\n  \"yValue\": 25\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/points",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "points"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Points by Function",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get points by function success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.expect(pm.response.json().data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/points?functionId={{createdFunctionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "points"],
+              "query": [
+                {
+                  "key": "functionId",
+                  "value": "{{createdFunctionId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Points in Range",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get points in range success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.expect(pm.response.json().data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/points/range?functionId={{createdFunctionId}}&minX=0&maxX=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "points", "range"],
+              "query": [
+                {
+                  "key": "functionId",
+                  "value": "{{createdFunctionId}}"
+                },
+                {
+                  "key": "minX",
+                  "value": "0"
+                },
+                {
+                  "key": "maxX",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Sorted Points",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get sorted points success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.expect(pm.response.json().data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/points/sorted?functionId={{createdFunctionId}}&sortBy=x&ascending=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "points", "sorted"],
+              "query": [
+                {
+                  "key": "functionId",
+                  "value": "{{createdFunctionId}}"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "x"
+                },
+                {
+                  "key": "ascending",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Extremum Points",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get extremum points success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.expect(pm.response.json().data).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/points/extremum?functionId={{createdFunctionId}}&type=maxX",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "points", "extremum"],
+              "query": [
+                {
+                  "key": "functionId",
+                  "value": "{{createdFunctionId}}"
+                },
+                {
+                  "key": "type",
+                  "value": "maxX"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Points Statistics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get points statistics success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.expect(pm.response.json().data).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/points/statistics?functionId={{createdFunctionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "points", "statistics"],
+              "query": [
+                {
+                  "key": "functionId",
+                  "value": "{{createdFunctionId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Point",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Update point success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.response.to.have.jsonBody('data.yValue', 30);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"functionId\": {{createdFunctionId}},\n  \"xValue\": 5,\n  \"yValue\": 30\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/points/{{createdPointId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "points", "{{createdPointId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Point",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Delete point success\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.jsonBody('status', 200);",
+                  "    pm.response.to.have.jsonBody('data.message', 'Point deleted successfully');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/points/{{createdPointId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "points", "{{createdPointId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cleanup - Delete Function",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/functions/{{createdFunctionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "functions", "{{createdFunctionId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cleanup - Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{createdUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{createdUserId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
