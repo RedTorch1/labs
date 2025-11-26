@@ -394,7 +394,9 @@ public class AdvancedUserDaoImpl implements AdvancedUserDao {
         return new User(
                 rs.getLong("id"),
                 rs.getString("username"),
-                rs.getString("password_hash")
+                rs.getString("password_hash"),
+                null,  // email
+                "USER" // роль по умолчанию
         );
     }
 }

@@ -38,7 +38,9 @@ public class UserDaoImpl implements UserDao {
                 return new User(
                         rs.getLong("id"),
                         rs.getString("username"),
-                        rs.getString("password_hash")
+                        rs.getString("password_hash"),
+                        null,  // email
+                        "USER" // роль по умолчанию
                 );
             }
         } catch (SQLException e) {
@@ -57,7 +59,9 @@ public class UserDaoImpl implements UserDao {
                 list.add(new User(
                         rs.getLong("id"),
                         rs.getString("username"),
-                        rs.getString("password_hash")
+                        rs.getString("password_hash"),
+                        null,  // email
+                        "USER" // роль по умолчанию
                 ));
             }
         } catch (SQLException e) {

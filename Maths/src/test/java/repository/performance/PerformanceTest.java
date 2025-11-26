@@ -36,7 +36,7 @@ public class PerformanceTest {
         // 1️⃣ INSERT
         long insertStart = System.currentTimeMillis();
         for (int i = 0; i < RECORD_COUNT; i++) {
-            userDao.insert(new User(0, "dao_user_" + i, "hash_" + i));
+            userDao.insert(new User(0, "dao_user_" + i, "hash_" + i, null, "USER"));
         }
         long insertEnd = System.currentTimeMillis();
 

@@ -380,7 +380,9 @@ public class AdvancedFunctionDaoImpl implements AdvancedFunctionDao {
                 users.add(new User(
                         rs.getLong("id"),
                         rs.getString("username"),
-                        rs.getString("password_hash")
+                        rs.getString("password_hash"),
+                        null,  // email
+                        "USER" // роль по умолчанию
                 ));
             }
             log.trace("📋 Retrieved {} users from database", users.size());
