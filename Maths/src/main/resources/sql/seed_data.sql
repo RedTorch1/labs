@@ -1,2 +1,0 @@
-INSERT INTO roles (name) VALUES ('admin') ON CONFLICT DO NOTHING;
-INSERT INTO roles (name) VALUES ('user') ON CONFLICT DO NOTHING;
