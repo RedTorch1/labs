@@ -51,7 +51,7 @@ public class PointController {
     @DeleteMapping
     public ResponseEntity<?> deletePoints(@PathVariable Long functionId) {
         LOG.info("Delete points for functionId={}", functionId);
-        pointRepository.deleteByFunctionId(functionId);
+        pointRepository.deleteByFunction_Id(functionId);
         return ResponseEntity.noContent().build();
     }
 }

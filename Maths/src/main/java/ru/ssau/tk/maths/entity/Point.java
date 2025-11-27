@@ -40,8 +40,8 @@ public class Point {
     public void setFunction(Function function) { this.function = function; }
 
     public BigDecimal getXValue() { return xValue; }
-    public void setXValue(BigDecimal xValue) { this.xValue = xValue; }
+    public void setxValue(BigDecimal xValue) { this.xValue = xValue; }
 
     public BigDecimal getYValue() { return yValue; }
-    public void setYValue(BigDecimal yValue) { this.yValue = yValue; }
+    public void setyValue(BigDecimal yValue) { this.yValue = yValue; }
 }
