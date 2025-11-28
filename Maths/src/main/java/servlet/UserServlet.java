@@ -4,14 +4,11 @@ import dao.impl.UserDaoImpl;
 import model.User;
 import servlet.util.JsonResponseHelper;
 import servlet.util.RequestParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -19,9 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
-@WebServlet("/api/users/*")
 public class UserServlet extends HttpServlet {
-    private static final Logger log = LoggerFactory.getLogger(UserServlet.class);
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserServlet.class);
     private UserDaoImpl userDao;
     private Connection conn;
 
@@ -29,14 +25,30 @@ public class UserServlet extends HttpServlet {
     public void init() throws ServletException {
         try {
             log.info("🚀 Initializing UserServlet...");
-            conn = DriverManager.getConnection(
-                    "jdbc:postgresql://localhost:5432/lab5",
-                    "labuser",
-                    "labpass");
+
+            // Явно загружаем драйвер
+            try {
+                Class.forName("org.postgresql.Driver");
+                log.info("✅ PostgreSQL Driver loaded");
+            } catch (ClassNotFoundException e) {
+                log.error("❌ PostgreSQL Driver not found");
+                throw new ServletException("PostgreSQL Driver not found", e);
+            }
+
+            String dbUrl = System.getenv().getOrDefault("DB_URL", "jdbc:postgresql://localhost:5432/lab5");
+            String dbUser = System.getenv().getOrDefault("DB_USER", "postgres");
+            String dbPassword = System.getenv().getOrDefault("DB_PASSWORD", "postgres");
+
+            log.info("🔗 Connecting to: {}", dbUrl);
+            conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+            log.info("✅ Database connection successful!");
+
             userDao = new UserDaoImpl(conn);
+            log.info("✅ UserDaoImpl created successfully");
+
             log.info("✅ UserServlet initialized successfully");
         } catch (Exception e) {
-            log.error("❌ Failed to initialize UserServlet", e);
+            log.error("❌ Failed to initialize UserServlet: {}", e.getMessage());
             throw new ServletException("Database connection failed", e);
         }
     }
@@ -128,21 +140,30 @@ public class UserServlet extends HttpServlet {
 
     private void getAllUsers(HttpServletRequest request, HttpServletResponse response) throws IOException {
         log.info("📋 Getting all users");
-        List<User> users = userDao.findAll();
-        log.info("✅ Found {} users", users.size());
-        JsonResponseHelper.sendSuccess(response, users);
+        try {
+            List<User> users = userDao.findAll();
+            log.info("✅ Found {} users", users.size());
+            JsonResponseHelper.sendSuccess(response, users);
+        } catch (Exception e) {
+            log.error("❌ Error in getAllUsers", e);
+            JsonResponseHelper.sendError(response, 500, "Error getting users: " + e.getMessage());
+        }
     }
 
     private void getUserById(Long userId, HttpServletResponse response) throws IOException {
         log.info("🔍 Getting user by ID: {}", userId);
-        User user = userDao.findById(userId);
-
-        if (user != null) {
-            log.info("✅ Found user: {}", user.getUsername());
-            JsonResponseHelper.sendSuccess(response, user);
-        } else {
-            log.warn("⚠️ User not found with ID: {}", userId);
-            JsonResponseHelper.sendError(response, 404, "User not found");
+        try {
+            User user = userDao.findById(userId);
+            if (user != null) {
+                log.info("✅ Found user: {}", user.getUsername());
+                JsonResponseHelper.sendSuccess(response, user);
+            } else {
+                log.warn("⚠️ User not found with ID: {}", userId);
+                JsonResponseHelper.sendError(response, 404, "User not found");
+            }
+        } catch (Exception e) {
+            log.error("❌ Error in getUserById", e);
+            JsonResponseHelper.sendError(response, 500, "Error getting user: " + e.getMessage());
         }
     }
 
@@ -155,62 +176,76 @@ public class UserServlet extends HttpServlet {
             return;
         }
 
-        // Используем AdvancedUserDao для поиска
-        dao.impl.AdvancedUserDaoImpl advancedUserDao = new dao.impl.AdvancedUserDaoImpl(conn);
-        List<model.User> users = advancedUserDao.findByUsernameContaining(username);
-
-        log.info("✅ Found {} users matching '{}'", users.size(), username);
-        JsonResponseHelper.sendSuccess(response, users);
+        try {
+            dao.impl.AdvancedUserDaoImpl advancedUserDao = new dao.impl.AdvancedUserDaoImpl(conn);
+            List<model.User> users = advancedUserDao.findByUsernameContaining(username);
+            log.info("✅ Found {} users matching '{}'", users.size(), username);
+            JsonResponseHelper.sendSuccess(response, users);
+        } catch (Exception e) {
+            log.error("❌ Error in searchUsers", e);
+            JsonResponseHelper.sendError(response, 500, "Error searching users: " + e.getMessage());
+        }
     }
 
     private void createUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
         log.info("👤 Creating new user");
 
-        // Парсим JSON из тела запроса
-        User newUser = RequestParser.parseJsonRequest(request, User.class);
+        try {
+            User newUser = RequestParser.parseJsonRequest(request, User.class);
 
-        if (newUser.getUsername() == null || newUser.getPasswordHash() == null) {
-            JsonResponseHelper.sendError(response, 400, "Username and passwordHash are required");
-            return;
+            if (newUser.getUsername() == null || newUser.getPasswordHash() == null) {
+                JsonResponseHelper.sendError(response, 400, "Username and passwordHash are required");
+                return;
+            }
+
+            userDao.insert(newUser);
+            log.info("✅ Created new user: {}", newUser.getUsername());
+            JsonResponseHelper.sendSuccess(response, newUser);
+        } catch (Exception e) {
+            log.error("❌ Error in createUser", e);
+            JsonResponseHelper.sendError(response, 500, "Error creating user: " + e.getMessage());
         }
-
-        userDao.insert(newUser);
-        log.info("✅ Created new user: {}", newUser.getUsername());
-
-        JsonResponseHelper.sendSuccess(response, newUser);
     }
 
     private void updateUser(Long userId, HttpServletRequest request, HttpServletResponse response) throws IOException {
         log.info("✏️ Updating user with ID: {}", userId);
 
-        User existingUser = userDao.findById(userId);
-        if (existingUser == null) {
-            JsonResponseHelper.sendError(response, 404, "User not found");
-            return;
+        try {
+            User existingUser = userDao.findById(userId);
+            if (existingUser == null) {
+                JsonResponseHelper.sendError(response, 404, "User not found");
+                return;
+            }
+
+            User updatedUser = RequestParser.parseJsonRequest(request, User.class);
+            updatedUser.setId(userId);
+
+            userDao.update(updatedUser);
+            log.info("✅ Updated user with ID: {}", userId);
+            JsonResponseHelper.sendSuccess(response, updatedUser);
+        } catch (Exception e) {
+            log.error("❌ Error in updateUser", e);
+            JsonResponseHelper.sendError(response, 500, "Error updating user: " + e.getMessage());
         }
-
-        User updatedUser = RequestParser.parseJsonRequest(request, User.class);
-        updatedUser.setId(userId); // Убедимся, что ID совпадает
-
-        userDao.update(updatedUser);
-        log.info("✅ Updated user with ID: {}", userId);
-
-        JsonResponseHelper.sendSuccess(response, updatedUser);
     }
 
     private void deleteUser(Long userId, HttpServletResponse response) throws IOException {
         log.info("🗑️ Deleting user with ID: {}", userId);
 
-        User existingUser = userDao.findById(userId);
-        if (existingUser == null) {
-            JsonResponseHelper.sendError(response, 404, "User not found");
-            return;
+        try {
+            User existingUser = userDao.findById(userId);
+            if (existingUser == null) {
+                JsonResponseHelper.sendError(response, 404, "User not found");
+                return;
+            }
+
+            userDao.delete(userId);
+            log.info("✅ Deleted user with ID: {}", userId);
+            JsonResponseHelper.sendSuccess(response, Map.of("message", "User deleted successfully"));
+        } catch (Exception e) {
+            log.error("❌ Error in deleteUser", e);
+            JsonResponseHelper.sendError(response, 500, "Error deleting user: " + e.getMessage());
         }
-
-        userDao.delete(userId);
-        log.info("✅ Deleted user with ID: {}", userId);
-
-        JsonResponseHelper.sendSuccess(response, Map.of("message", "User deleted successfully"));
     }
 
     @Override

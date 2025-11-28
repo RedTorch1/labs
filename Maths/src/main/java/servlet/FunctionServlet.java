@@ -8,18 +8,16 @@ import servlet.util.RequestParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet("/api/functions/*")
 public class FunctionServlet extends HttpServlet {
     private static final Logger log = LoggerFactory.getLogger(FunctionServlet.class);
     private FunctionDaoImpl functionDao;
@@ -30,10 +28,24 @@ public class FunctionServlet extends HttpServlet {
     public void init() throws ServletException {
         try {
             log.info("🚀 Initializing FunctionServlet...");
-            conn = DriverManager.getConnection(
-                    "jdbc:postgresql://localhost:5432/lab5",
-                    "labuser",
-                    "labpass");
+
+            // Явно загружаем драйвер
+            try {
+                Class.forName("org.postgresql.Driver");
+                log.info("✅ PostgreSQL Driver loaded");
+            } catch (ClassNotFoundException e) {
+                log.error("❌ PostgreSQL Driver not found");
+                throw new ServletException("PostgreSQL Driver not found", e);
+            }
+
+            String dbUrl = System.getenv().getOrDefault("DB_URL", "jdbc:postgresql://localhost:5432/lab5");
+            String dbUser = System.getenv().getOrDefault("DB_USER", "postgres");
+            String dbPassword = System.getenv().getOrDefault("DB_PASSWORD", "postgres");
+
+            log.info("🔗 Connecting to: {}", dbUrl);
+            conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+            log.info("✅ Database connection successful!");
+
             functionDao = new FunctionDaoImpl(conn);
             advancedFunctionDao = new AdvancedFunctionDaoImpl(conn);
             log.info("✅ FunctionServlet initialized successfully");
@@ -42,6 +54,7 @@ public class FunctionServlet extends HttpServlet {
             throw new ServletException("Database connection failed", e);
         }
     }
+
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {

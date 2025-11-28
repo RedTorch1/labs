@@ -1,13 +1,12 @@
 package servlet;
 
 import servlet.util.AuthHelper;
-import jakarta.servlet.*;
-import jakarta.servlet.annotation.WebFilter;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebFilter("/api/*")
 public class AuthFilter implements Filter {
 
     @Override

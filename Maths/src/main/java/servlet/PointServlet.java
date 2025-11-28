@@ -10,11 +10,10 @@ import servlet.util.RequestParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -23,7 +22,6 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
-@WebServlet("/api/points/*")
 public class PointServlet extends HttpServlet {
     private static final Logger log = LoggerFactory.getLogger(PointServlet.class);
     private PointDaoImpl pointDao;
@@ -35,10 +33,24 @@ public class PointServlet extends HttpServlet {
     public void init() throws ServletException {
         try {
             log.info("🚀 Initializing PointServlet...");
-            conn = DriverManager.getConnection(
-                    "jdbc:postgresql://localhost:5432/lab5",
-                    "labuser",
-                    "labpass");
+
+            // Явно загружаем драйвер
+            try {
+                Class.forName("org.postgresql.Driver");
+                log.info("✅ PostgreSQL Driver loaded");
+            } catch (ClassNotFoundException e) {
+                log.error("❌ PostgreSQL Driver not found");
+                throw new ServletException("PostgreSQL Driver not found", e);
+            }
+
+            String dbUrl = System.getenv().getOrDefault("DB_URL", "jdbc:postgresql://localhost:5432/lab5");
+            String dbUser = System.getenv().getOrDefault("DB_USER", "postgres");
+            String dbPassword = System.getenv().getOrDefault("DB_PASSWORD", "postgres");
+
+            log.info("🔗 Connecting to: {}", dbUrl);
+            conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+            log.info("✅ Database connection successful!");
+
             pointDao = new PointDaoImpl(conn);
             advancedPointDao = new AdvancedPointDaoImpl(conn);
             functionDao = new FunctionDaoImpl(conn);
@@ -57,12 +69,15 @@ public class PointServlet extends HttpServlet {
             String pathInfo = request.getPathInfo();
 
             if (pathInfo == null || pathInfo.equals("/")) {
-                // GET /api/points?functionId=... - получить точки функции
-                getPointsByFunction(request, response);
+                // GET /api/points - получить ВСЕ точки
+                getAllPoints(request, response);
             } else if (pathInfo.matches("/\\d+")) {
                 // GET /api/points/{id} - получить точку по ID
                 Long pointId = Long.parseLong(pathInfo.substring(1));
                 getPointById(pointId, response);
+            } else if (pathInfo.equals("/function")) {
+                // GET /api/points/function?functionId=... - точки для конкретной функции
+                getPointsByFunction(request, response);
             } else if (pathInfo.equals("/range")) {
                 // GET /api/points/range?functionId=...&minX=...&maxX=...
                 getPointsInRange(request, response);
@@ -143,6 +158,19 @@ public class PointServlet extends HttpServlet {
         }
     }
 
+    // НОВЫЙ МЕТОД: Получить все точки
+    private void getAllPoints(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        log.info("📋 Getting all points");
+        try {
+            List<PointEntity> allPoints = getAllPoints();
+            log.info("✅ Found {} total points", allPoints.size());
+            JsonResponseHelper.sendSuccess(response, allPoints);
+        } catch (Exception e) {
+            log.error("❌ Error in getAllPoints", e);
+            JsonResponseHelper.sendError(response, 500, "Error getting points: " + e.getMessage());
+        }
+    }
+
     private void getPointsByFunction(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Long functionId = RequestParser.parseLongParameter(request, "functionId");
         log.info("📊 Getting points for function ID: {}", functionId);
@@ -152,26 +180,35 @@ public class PointServlet extends HttpServlet {
             return;
         }
 
-        List<PointEntity> points = pointDao.findByFunction(functionId);
-        log.info("✅ Found {} points for function {}", points.size(), functionId);
-        JsonResponseHelper.sendSuccess(response, points);
+        try {
+            List<PointEntity> points = pointDao.findByFunction(functionId);
+            log.info("✅ Found {} points for function {}", points.size(), functionId);
+            JsonResponseHelper.sendSuccess(response, points);
+        } catch (Exception e) {
+            log.error("❌ Error in getPointsByFunction", e);
+            JsonResponseHelper.sendError(response, 500, "Error getting points: " + e.getMessage());
+        }
     }
 
     private void getPointById(Long pointId, HttpServletResponse response) throws IOException {
         log.info("🔍 Getting point by ID: {}", pointId);
-        // Для получения точки по ID нужно сначала найти её через все точки функций
-        List<PointEntity> allPoints = getAllPoints();
-        PointEntity point = allPoints.stream()
-                .filter(p -> p.getId() == pointId)
-                .findFirst()
-                .orElse(null);
+        try {
+            List<PointEntity> allPoints = getAllPoints();
+            PointEntity point = allPoints.stream()
+                    .filter(p -> p.getId() == pointId)
+                    .findFirst()
+                    .orElse(null);
 
-        if (point != null) {
-            log.info("✅ Found point: ({}, {})", point.getxValue(), point.getyValue());
-            JsonResponseHelper.sendSuccess(response, point);
-        } else {
-            log.warn("⚠️ Point not found with ID: {}", pointId);
-            JsonResponseHelper.sendError(response, 404, "Point not found");
+            if (point != null) {
+                log.info("✅ Found point: ({}, {})", point.getxValue(), point.getyValue());
+                JsonResponseHelper.sendSuccess(response, point);
+            } else {
+                log.warn("⚠️ Point not found with ID: {}", pointId);
+                JsonResponseHelper.sendError(response, 404, "Point not found");
+            }
+        } catch (Exception e) {
+            log.error("❌ Error in getPointById", e);
+            JsonResponseHelper.sendError(response, 500, "Error getting point: " + e.getMessage());
         }
     }
 
@@ -190,18 +227,23 @@ public class PointServlet extends HttpServlet {
             return;
         }
 
-        List<PointEntity> points;
-        if (minX != null && maxX != null) {
-            points = advancedPointDao.findByXValueRange(functionId, minX, maxX);
-        } else if (minY != null && maxY != null) {
-            points = advancedPointDao.findByYValueRange(functionId, minY, maxY);
-        } else {
-            JsonResponseHelper.sendError(response, 400, "Range parameters (minX/maxX or minY/maxY) are required");
-            return;
-        }
+        try {
+            List<PointEntity> points;
+            if (minX != null && maxX != null) {
+                points = advancedPointDao.findByXValueRange(functionId, minX, maxX);
+            } else if (minY != null && maxY != null) {
+                points = advancedPointDao.findByYValueRange(functionId, minY, maxY);
+            } else {
+                JsonResponseHelper.sendError(response, 400, "Range parameters (minX/maxX or minY/maxY) are required");
+                return;
+            }
 
-        log.info("✅ Found {} points in specified range", points.size());
-        JsonResponseHelper.sendSuccess(response, points);
+            log.info("✅ Found {} points in specified range", points.size());
+            JsonResponseHelper.sendSuccess(response, points);
+        } catch (Exception e) {
+            log.error("❌ Error in getPointsInRange", e);
+            JsonResponseHelper.sendError(response, 500, "Error getting points in range: " + e.getMessage());
+        }
     }
 
     private void getSortedPoints(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -223,18 +265,23 @@ public class PointServlet extends HttpServlet {
 
         log.info("📊 Getting sorted points for function {} by {} ({})", functionId, sortBy, ascending ? "ASC" : "DESC");
 
-        List<PointEntity> points;
-        if ("x".equalsIgnoreCase(sortBy)) {
-            points = advancedPointDao.findByFunctionSortedByX(functionId, ascending);
-        } else if ("y".equalsIgnoreCase(sortBy)) {
-            points = advancedPointDao.findByFunctionSortedByY(functionId, ascending);
-        } else {
-            JsonResponseHelper.sendError(response, 400, "Invalid sortBy parameter. Use 'x' or 'y'");
-            return;
-        }
+        try {
+            List<PointEntity> points;
+            if ("x".equalsIgnoreCase(sortBy)) {
+                points = advancedPointDao.findByFunctionSortedByX(functionId, ascending);
+            } else if ("y".equalsIgnoreCase(sortBy)) {
+                points = advancedPointDao.findByFunctionSortedByY(functionId, ascending);
+            } else {
+                JsonResponseHelper.sendError(response, 400, "Invalid sortBy parameter. Use 'x' or 'y'");
+                return;
+            }
 
-        log.info("✅ Found {} sorted points", points.size());
-        JsonResponseHelper.sendSuccess(response, points);
+            log.info("✅ Found {} sorted points", points.size());
+            JsonResponseHelper.sendSuccess(response, points);
+        } catch (Exception e) {
+            log.error("❌ Error in getSortedPoints", e);
+            JsonResponseHelper.sendError(response, 500, "Error getting sorted points: " + e.getMessage());
+        }
     }
 
     private void getExtremumPoints(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -248,31 +295,36 @@ public class PointServlet extends HttpServlet {
             return;
         }
 
-        PointEntity extremumPoint;
-        switch (type.toLowerCase()) {
-            case "maxx":
-                extremumPoint = advancedPointDao.findMaxXPoint(functionId);
-                break;
-            case "minx":
-                extremumPoint = advancedPointDao.findMinXPoint(functionId);
-                break;
-            case "maxy":
-                extremumPoint = advancedPointDao.findMaxYPoint(functionId);
-                break;
-            case "miny":
-                extremumPoint = advancedPointDao.findMinYPoint(functionId);
-                break;
-            default:
-                JsonResponseHelper.sendError(response, 400, "Invalid type. Use: maxX, minX, maxY, minY");
-                return;
-        }
+        try {
+            PointEntity extremumPoint;
+            switch (type.toLowerCase()) {
+                case "maxx":
+                    extremumPoint = advancedPointDao.findMaxXPoint(functionId);
+                    break;
+                case "minx":
+                    extremumPoint = advancedPointDao.findMinXPoint(functionId);
+                    break;
+                case "maxy":
+                    extremumPoint = advancedPointDao.findMaxYPoint(functionId);
+                    break;
+                case "miny":
+                    extremumPoint = advancedPointDao.findMinYPoint(functionId);
+                    break;
+                default:
+                    JsonResponseHelper.sendError(response, 400, "Invalid type. Use: maxX, minX, maxY, minY");
+                    return;
+            }
 
-        if (extremumPoint != null) {
-            log.info("✅ Found {} point: ({}, {})", type, extremumPoint.getxValue(), extremumPoint.getyValue());
-            JsonResponseHelper.sendSuccess(response, extremumPoint);
-        } else {
-            log.warn("⚠️ No {} point found for function {}", type, functionId);
-            JsonResponseHelper.sendError(response, 404, type + " point not found");
+            if (extremumPoint != null) {
+                log.info("✅ Found {} point: ({}, {})", type, extremumPoint.getxValue(), extremumPoint.getyValue());
+                JsonResponseHelper.sendSuccess(response, extremumPoint);
+            } else {
+                log.warn("⚠️ No {} point found for function {}", type, functionId);
+                JsonResponseHelper.sendError(response, 404, type + " point not found");
+            }
+        } catch (Exception e) {
+            log.error("❌ Error in getExtremumPoints", e);
+            JsonResponseHelper.sendError(response, 500, "Error getting extremum points: " + e.getMessage());
         }
     }
 
@@ -287,94 +339,114 @@ public class PointServlet extends HttpServlet {
             return;
         }
 
-        List<PointEntity> allPoints = pointDao.findByFunction(functionId);
-        Map<String, Object> statistics = new HashMap<>();
+        try {
+            List<PointEntity> allPoints = pointDao.findByFunction(functionId);
+            Map<String, Object> statistics = new HashMap<>();
 
-        // Базовая статистика
-        statistics.put("totalPoints", allPoints.size());
+            // Базовая статистика
+            statistics.put("totalPoints", allPoints.size());
 
-        if (!allPoints.isEmpty()) {
-            // Статистика по X
-            statistics.put("minX", allPoints.stream().mapToDouble(PointEntity::getxValue).min().orElse(0));
-            statistics.put("maxX", allPoints.stream().mapToDouble(PointEntity::getxValue).max().orElse(0));
-            statistics.put("avgX", allPoints.stream().mapToDouble(PointEntity::getxValue).average().orElse(0));
+            if (!allPoints.isEmpty()) {
+                // Статистика по X
+                statistics.put("minX", allPoints.stream().mapToDouble(PointEntity::getxValue).min().orElse(0));
+                statistics.put("maxX", allPoints.stream().mapToDouble(PointEntity::getxValue).max().orElse(0));
+                statistics.put("avgX", allPoints.stream().mapToDouble(PointEntity::getxValue).average().orElse(0));
 
-            // Статистика по Y
-            statistics.put("minY", allPoints.stream().mapToDouble(PointEntity::getyValue).min().orElse(0));
-            statistics.put("maxY", allPoints.stream().mapToDouble(PointEntity::getyValue).max().orElse(0));
-            statistics.put("avgY", allPoints.stream().mapToDouble(PointEntity::getyValue).average().orElse(0));
+                // Статистика по Y
+                statistics.put("minY", allPoints.stream().mapToDouble(PointEntity::getyValue).min().orElse(0));
+                statistics.put("maxY", allPoints.stream().mapToDouble(PointEntity::getyValue).max().orElse(0));
+                statistics.put("avgY", allPoints.stream().mapToDouble(PointEntity::getyValue).average().orElse(0));
 
-            // Дополнительная статистика
-            if (threshold != null) {
-                statistics.put("pointsAboveY", advancedPointDao.findPointsAboveY(functionId, threshold).size());
-                statistics.put("pointsBelowY", advancedPointDao.findPointsBelowY(functionId, threshold).size());
+                // Дополнительная статистика
+                if (threshold != null) {
+                    statistics.put("pointsAboveY", advancedPointDao.findPointsAboveY(functionId, threshold).size());
+                    statistics.put("pointsBelowY", advancedPointDao.findPointsBelowY(functionId, threshold).size());
+                }
             }
-        }
 
-        log.info("✅ Calculated statistics for {} points", allPoints.size());
-        JsonResponseHelper.sendSuccess(response, statistics);
+            log.info("✅ Calculated statistics for {} points", allPoints.size());
+            JsonResponseHelper.sendSuccess(response, statistics);
+        } catch (Exception e) {
+            log.error("❌ Error in getPointsStatistics", e);
+            JsonResponseHelper.sendError(response, 500, "Error getting points statistics: " + e.getMessage());
+        }
     }
 
     private void createPoint(HttpServletRequest request, HttpServletResponse response) throws IOException {
         log.info("📈 Creating new point");
 
-        PointEntity newPoint = RequestParser.parseJsonRequest(request, PointEntity.class);
+        try {
+            PointEntity newPoint = RequestParser.parseJsonRequest(request, PointEntity.class);
 
-        if (newPoint.getFunctionId() == 0) {
-            JsonResponseHelper.sendError(response, 400, "functionId is required");
-            return;
+            if (newPoint.getFunctionId() == 0) {
+                JsonResponseHelper.sendError(response, 400, "functionId is required");
+                return;
+            }
+
+            pointDao.insert(newPoint);
+            log.info("✅ Created new point: ({}, {}) for function {}",
+                    newPoint.getxValue(), newPoint.getyValue(), newPoint.getFunctionId());
+
+            JsonResponseHelper.sendSuccess(response, newPoint);
+        } catch (Exception e) {
+            log.error("❌ Error in createPoint", e);
+            JsonResponseHelper.sendError(response, 500, "Error creating point: " + e.getMessage());
         }
-
-        pointDao.insert(newPoint);
-        log.info("✅ Created new point: ({}, {}) for function {}",
-                newPoint.getxValue(), newPoint.getyValue(), newPoint.getFunctionId());
-
-        JsonResponseHelper.sendSuccess(response, newPoint);
     }
 
     private void updatePoint(Long pointId, HttpServletRequest request, HttpServletResponse response) throws IOException {
         log.info("✏️ Updating point with ID: {}", pointId);
 
-        // Находим точку для проверки существования
-        List<PointEntity> allPoints = getAllPoints();
-        PointEntity existingPoint = allPoints.stream()
-                .filter(p -> p.getId() == pointId)
-                .findFirst()
-                .orElse(null);
+        try {
+            // Находим точку для проверки существования
+            List<PointEntity> allPoints = getAllPoints();
+            PointEntity existingPoint = allPoints.stream()
+                    .filter(p -> p.getId() == pointId)
+                    .findFirst()
+                    .orElse(null);
 
-        if (existingPoint == null) {
-            JsonResponseHelper.sendError(response, 404, "Point not found");
-            return;
+            if (existingPoint == null) {
+                JsonResponseHelper.sendError(response, 404, "Point not found");
+                return;
+            }
+
+            PointEntity updatedPoint = RequestParser.parseJsonRequest(request, PointEntity.class);
+            updatedPoint.setId(pointId);
+
+            pointDao.update(updatedPoint);
+            log.info("✅ Updated point with ID: {}", pointId);
+
+            JsonResponseHelper.sendSuccess(response, updatedPoint);
+        } catch (Exception e) {
+            log.error("❌ Error in updatePoint", e);
+            JsonResponseHelper.sendError(response, 500, "Error updating point: " + e.getMessage());
         }
-
-        PointEntity updatedPoint = RequestParser.parseJsonRequest(request, PointEntity.class);
-        updatedPoint.setId(pointId);
-
-        pointDao.update(updatedPoint);
-        log.info("✅ Updated point with ID: {}", pointId);
-
-        JsonResponseHelper.sendSuccess(response, updatedPoint);
     }
 
     private void deletePoint(Long pointId, HttpServletResponse response) throws IOException {
         log.info("🗑️ Deleting point with ID: {}", pointId);
 
-        // Находим точку для проверки существования
-        List<PointEntity> allPoints = getAllPoints();
-        PointEntity existingPoint = allPoints.stream()
-                .filter(p -> p.getId() == pointId)
-                .findFirst()
-                .orElse(null);
+        try {
+            // Находим точку для проверки существования
+            List<PointEntity> allPoints = getAllPoints();
+            PointEntity existingPoint = allPoints.stream()
+                    .filter(p -> p.getId() == pointId)
+                    .findFirst()
+                    .orElse(null);
 
-        if (existingPoint == null) {
-            JsonResponseHelper.sendError(response, 404, "Point not found");
-            return;
+            if (existingPoint == null) {
+                JsonResponseHelper.sendError(response, 404, "Point not found");
+                return;
+            }
+
+            pointDao.delete(pointId);
+            log.info("✅ Deleted point with ID: {}", pointId);
+
+            JsonResponseHelper.sendSuccess(response, Map.of("message", "Point deleted successfully"));
+        } catch (Exception e) {
+            log.error("❌ Error in deletePoint", e);
+            JsonResponseHelper.sendError(response, 500, "Error deleting point: " + e.getMessage());
         }
-
-        pointDao.delete(pointId);
-        log.info("✅ Deleted point with ID: {}", pointId);
-
-        JsonResponseHelper.sendSuccess(response, Map.of("message", "Point deleted successfully"));
     }
 
     // Вспомогательные методы

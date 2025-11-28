@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="4.0"
+         xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+         http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd">
+
+    <display-name>Lab6 Application</display-name>
+
+ <!-- ЗАКОММЕНТИРУЙ фильтр -->
+    <!--
+    <filter>
+        <filter-name>AuthFilter</filter-name>
+        <filter-class>servlet.AuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/api/*</url-pattern>
+    </filter-mapping>
+    -->
+
+
+    <!-- Auth Servlet -->
+    <servlet>
+        <servlet-name>AuthServlet</servlet-name>
+        <servlet-class>servlet.AuthServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AuthServlet</servlet-name>
+        <url-pattern>/api/auth/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- User Servlet -->
+    <servlet>
+        <servlet-name>UserServlet</servlet-name>
+        <servlet-class>servlet.UserServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UserServlet</servlet-name>
+        <url-pattern>/api/users/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Function Servlet -->
+    <servlet>
+        <servlet-name>FunctionServlet</servlet-name>
+        <servlet-class>servlet.FunctionServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>FunctionServlet</servlet-name>
+        <url-pattern>/api/functions/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Point Servlet -->
+    <servlet>
+        <servlet-name>PointServlet</servlet-name>
+        <servlet-class>servlet.PointServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PointServlet</servlet-name>
+        <url-pattern>/api/points/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>HealthServlet</servlet-name>
+        <servlet-class>servlet.HealthServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HealthServlet</servlet-name>
+        <url-pattern>/health</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>TestServlet</servlet-name>
+        <servlet-class>servlet.TestServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TestServlet</servlet-name>
+        <url-pattern>/test</url-pattern>
+    </servlet-mapping>
+</web-app>
