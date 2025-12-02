@@ -31,7 +31,7 @@ public class FunctionService {
 
     @Transactional
     public List<Point> getOrComputePoints(Long functionId, double xmin, double xmax, double step) {
-        List<Point> existing = pointRepository.findByFunction_IdOrderByXValueAsc(functionId);
+        List<Point> existing = pointRepository.findByFunction_IdOrderByXvalueAsc(functionId);
         if (!existing.isEmpty()) {
             return existing;
         }
@@ -72,7 +72,7 @@ public class FunctionService {
             BigDecimal yb = BigDecimal.valueOf(y).setScale(6, RoundingMode.HALF_UP);
 
             // проверяем, существует ли уже точка (на всякий случай уникальность)
-            if (pointRepository.findByFunction_IdAndXValue(functionId, xb).isPresent()) {
+            if (pointRepository.findByFunction_IdAndXvalue(functionId, xb).isPresent()) {
                 continue;
             }
 
@@ -83,7 +83,7 @@ public class FunctionService {
         // массовое сохранение
         List<Point> saved = pointRepository.saveAll(computed);
         // вернуть сохранённые (или отсортированные существующие, если они появились параллельно)
-        return pointRepository.findByFunction_IdOrderByXValueAsc(functionId);
+        return pointRepository.findByFunction_IdOrderByXvalueAsc(functionId);
     }
 
     @Transactional

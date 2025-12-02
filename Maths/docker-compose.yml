@@ -6,9 +6,9 @@ services:
     image: postgres:15
     restart: always
     environment:
-      POSTGRES_DB: maths
-      POSTGRES_USER: labuser
-      POSTGRES_PASSWORD: labpass
+      POSTGRES_DB: lab5
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
@@ -19,9 +19,9 @@ services:
     depends_on:
       - db
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/maths
-      SPRING_DATASOURCE_USERNAME: labuser
-      SPRING_DATASOURCE_PASSWORD: labpass
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/lab5
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
     ports:
       - "8080:8080"
 

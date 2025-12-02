@@ -43,7 +43,7 @@ public class SearchService {
                 funcs.forEach(stack::push);
             }
             if (node instanceof Function f) {
-                List<Point> pts = pointRepository.findByFunction_IdOrderByXValueAsc(f.getId());
+                List<Point> pts = pointRepository.findByFunction_IdOrderByXvalueAsc(f.getId());
                 pts.forEach(stack::push);
             }
         }
@@ -66,7 +66,7 @@ public class SearchService {
                 queue.addAll(functionRepository.findByUserId(u.getId()));
             }
             if (node instanceof Function f) {
-                queue.addAll(pointRepository.findByFunction_IdOrderByXValueAsc(f.getId()));
+                queue.addAll(pointRepository.findByFunction_IdOrderByXvalueAsc(f.getId()));
             }
         }
         return result;
@@ -75,7 +75,7 @@ public class SearchService {
 
     public List<Point> sortPoints(Long functionId, String field) {
 
-        List<Point> pts = pointRepository.findByFunction_IdOrderByXValueAsc(functionId);
+        List<Point> pts = pointRepository.findByFunction_IdOrderByXvalueAsc(functionId);
 
         switch (field) {
             case "x" -> pts.sort(Comparator.comparing(Point::getXValue));
@@ -104,7 +104,7 @@ public class SearchService {
     public List<Point> findPointsInRange(Long functionId, double min, double max) {
         log.info("[RangeSearch] func={} X=[{},{}]", functionId, min, max);
 
-        return pointRepository.findByFunction_IdOrderByXValueAsc(functionId).stream()
+        return pointRepository.findByFunction_IdOrderByXvalueAsc(functionId).stream()
                 .filter(p -> p.getXValue().doubleValue() >= min)
                 .filter(p -> p.getXValue().doubleValue() <= max)
                 .toList();

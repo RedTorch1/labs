@@ -19,17 +19,17 @@ public class Point {
 
     // используем BigDecimal для точности хранения
     @Column(name = "x_value", nullable = false, precision = 20, scale = 10)
-    private BigDecimal xValue;
+    private BigDecimal xvalue;
 
     @Column(name = "y_value", nullable = false, precision = 20, scale = 10)
-    private BigDecimal yValue;
+    private BigDecimal yvalue;
 
     public Point() {}
 
     public Point(Function function, BigDecimal xValue, BigDecimal yValue) {
         this.function = function;
-        this.xValue = xValue;
-        this.yValue = yValue;
+        this.xvalue = xValue;
+        this.yvalue = yValue;
     }
 
     // getters/setters
@@ -39,9 +39,9 @@ public class Point {
     public Function getFunction() { return function; }
     public void setFunction(Function function) { this.function = function; }
 
-    public BigDecimal getXValue() { return xValue; }
-    public void setXValue(BigDecimal xValue) { this.xValue = xValue; }
+    public BigDecimal getXValue() { return xvalue; }
+    public void setXValue(BigDecimal xValue) { this.xvalue = xValue; }
 
-    public BigDecimal getYValue() { return yValue; }
-    public void setYValue(BigDecimal yValue) { this.yValue = yValue; }
+    public BigDecimal getYValue() { return yvalue; }
+    public void setYValue(BigDecimal yValue) { this.yvalue = yValue; }
 }

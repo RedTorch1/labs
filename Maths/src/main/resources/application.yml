@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/maths
-    username: labuser
-    password: labpass
+    url: jdbc:postgresql://localhost:5432/lab5
+    username: postgres
+    password: postgres
     driver-class-name: org.postgresql.Driver
 
   jpa:

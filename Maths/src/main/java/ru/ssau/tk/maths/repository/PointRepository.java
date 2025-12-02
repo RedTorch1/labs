@@ -9,11 +9,10 @@ import java.util.Optional;
 
 public interface PointRepository extends JpaRepository<Point, Long> {
 
-    // Найти все точки по function.id, отсортированные по полю xValue (именно xValue, не XValue!)
-    List<Point> findByFunction_IdOrderByXValueAsc(Long functionId);
+    List<Point> findByFunction_IdOrderByXvalueAsc(Long functionId);
 
-    // Найти точку по function.id и xValue
-    Optional<Point> findByFunction_IdAndXValue(Long functionId, BigDecimal xValue);
+    Optional<Point> findByFunction_IdAndXvalue(Long functionId, BigDecimal xValue);
+
 
     // Удалить все точки по id функции
     void deleteByFunction_Id(Long functionId);
