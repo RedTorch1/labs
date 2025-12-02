@@ -8,8 +8,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
-    properties:
+      ddl-auto=update:show-sql: true
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -22,3 +21,4 @@ logging:
     name: logs/app.log
   level:
     root: INFO
+

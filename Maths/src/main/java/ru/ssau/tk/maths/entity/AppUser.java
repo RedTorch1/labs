@@ -13,7 +13,7 @@ public class AppUser {
     private String username;
 
     @Column(name = "password_hash", nullable = false)
-    private String passwordHash;
+    private String password_hash;
 
     @Column(nullable=false)
     private String role;
@@ -22,7 +22,7 @@ public class AppUser {
     public AppUser() {}
     public AppUser(String username, String passwordHash, String role) {
         this.username = username;
-        this.passwordHash = passwordHash;
+        this.password_hash = passwordHash;
         this.role = role;
     }
 
@@ -33,8 +33,8 @@ public class AppUser {
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
-    public String getPasswordHash() { return passwordHash; }
-    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public String getPasswordHash() { return password_hash; }
+    public void setPasswordHash(String passwordHash) { this.password_hash = passwordHash; }
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }

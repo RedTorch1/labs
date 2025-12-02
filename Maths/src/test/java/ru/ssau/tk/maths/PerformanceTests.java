@@ -43,7 +43,7 @@ public class PerformanceTests {
 
         functionService.getOrComputePoints(f.getId(), -5, 5, 1);
 
-        Path results = Path.of("perf_results/results.csv");
+        Path results = Path.of("results.csv");
         Files.createDirectories(results.getParent());
         FileWriter fw = new FileWriter(results.toFile(), false);
 

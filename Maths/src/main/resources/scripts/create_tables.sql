@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS app_user (
   id SERIAL PRIMARY KEY,
   username VARCHAR(100) NOT NULL UNIQUE,
   password_hash VARCHAR(256) NOT NULL,
-  email VARCHAR(256) UNIQUE,
   created_at TIMESTAMP DEFAULT now()
 );
 
