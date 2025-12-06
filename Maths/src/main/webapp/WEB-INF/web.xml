@@ -7,8 +7,7 @@
 
     <display-name>Lab6 Application</display-name>
 
- <!-- ЗАКОММЕНТИРУЙ фильтр -->
-    <!--
+
     <filter>
         <filter-name>AuthFilter</filter-name>
         <filter-class>servlet.AuthFilter</filter-class>
@@ -17,7 +16,7 @@
         <filter-name>AuthFilter</filter-name>
         <url-pattern>/api/*</url-pattern>
     </filter-mapping>
-    -->
+
 
 
     <!-- Auth Servlet -->
