@@ -157,19 +157,28 @@ public class FunctionUIController extends HttpServlet {
         System.out.println("=== createFromArrays called ===");
 
         try {
-            // Читаем тело запроса вручную
-            BufferedReader reader = request.getReader();
-            StringBuilder bodyBuilder = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                bodyBuilder.append(line);
+            // Получаем параметры возврата
+            String returnTo = request.getParameter("returnTo");
+            String panel = request.getParameter("panel");
+
+            System.out.println("Return parameters - returnTo: " + returnTo + ", panel: " + panel);
+
+            // Проверяем Content-Type
+            String contentType = request.getContentType();
+            System.out.println("Content-Type: " + contentType);
+
+            Map<String, String> params;
+
+            if (contentType != null && contentType.contains("multipart/form-data")) {
+                // Для multipart данных (если отправляется через FormData)
+                params = handleMultipartParams(request);
+            } else if (contentType != null && contentType.contains("application/x-www-form-urlencoded")) {
+                // Для обычных форм
+                params = parseFormUrlEncodedFromRequest(request);
+            } else {
+                // Пробуем прочитать тело запроса
+                params = parseRequestBody(request);
             }
-            String body = bodyBuilder.toString();
-
-            System.out.println("Request body: " + body);
-
-            // Парсим параметры
-            Map<String, String> params = parseFormUrlEncoded(body);
 
             // Получаем количество точек
             String pointsCountStr = params.get("pointsCount");
@@ -217,21 +226,71 @@ public class FunctionUIController extends HttpServlet {
             // Создание функции
             TabulatedFunction function = factory.create(xValues, yValues);
 
-            // Формирование ответа
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "Функция успешно создана");
-            result.put("pointsCount", function.getCount());
-            result.put("leftBound", function.leftBound());
-            result.put("rightBound", function.rightBound());
-
-            sendJsonResponse(response, result);
+            // Используем новый метод отправки ответа
+            sendSuccessResponse(response, function, null, returnTo, panel);
 
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Неверный формат числа: " + e.getMessage());
         } catch (Exception e) {
             throw new IllegalArgumentException("Ошибка при создании функции: " + e.getMessage());
         }
+    }
+
+    private Map<String, String> parseRequestBody(HttpServletRequest request) throws IOException {
+        Map<String, String> params = new HashMap<>();
+
+        // Пробуем прочитать тело запроса
+        BufferedReader reader = request.getReader();
+        StringBuilder bodyBuilder = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            bodyBuilder.append(line);
+        }
+        String body = bodyBuilder.toString();
+
+        System.out.println("Request body: " + body);
+
+        if (body != null && !body.isEmpty()) {
+            return parseFormUrlEncoded(body);
+        } else {
+            // Если тело пустое, пробуем получить параметры через getParameter
+            Enumeration<String> paramNames = request.getParameterNames();
+            while (paramNames.hasMoreElements()) {
+                String paramName = paramNames.nextElement();
+                params.put(paramName, request.getParameter(paramName));
+            }
+        }
+
+        return params;
+    }
+
+    private Map<String, String> parseFormUrlEncodedFromRequest(HttpServletRequest request) {
+        Map<String, String> params = new HashMap<>();
+
+        Enumeration<String> paramNames = request.getParameterNames();
+        while (paramNames.hasMoreElements()) {
+            String paramName = paramNames.nextElement();
+            params.put(paramName, request.getParameter(paramName));
+        }
+
+        return params;
+    }
+
+    private Map<String, String> handleMultipartParams(HttpServletRequest request)
+            throws IOException, ServletException {
+        Map<String, String> params = new HashMap<>();
+
+        Collection<Part> parts = request.getParts();
+        for (Part part : parts) {
+            String name = part.getName();
+            InputStream is = part.getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            String value = reader.readLine();
+            if (value != null) {
+                params.put(name, value);
+            }
+        }
+        return params;
     }
 
     private Map<String, String> parseFormUrlEncoded(String body) {
@@ -260,8 +319,19 @@ public class FunctionUIController extends HttpServlet {
     private void createFromFunction(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
+        System.out.println("=== createFromFunction called ===");
+
         try {
+            // Получаем параметры возврата
+            String returnTo = request.getParameter("returnTo");
+            String panel = request.getParameter("panel");
+
+            System.out.println("Return parameters - returnTo: " + returnTo + ", panel: " + panel);
+
+            // Получаем параметры
             String functionName = request.getParameter("functionName");
+            System.out.println("Function name: " + functionName);
+
             if (functionName == null || functionName.trim().isEmpty()) {
                 throw new IllegalArgumentException("Не выбрана функция");
             }
@@ -275,6 +345,7 @@ public class FunctionUIController extends HttpServlet {
             double xTo = parseDoubleParameter(request, "xTo", "Конец интервала");
             int pointsCount = parseIntParameter(request, "pointsCount", "Количество точек");
 
+            // Валидация
             if (xFrom >= xTo) {
                 throw new IllegalArgumentException("Начало интервала должно быть меньше конца");
             }
@@ -283,35 +354,16 @@ public class FunctionUIController extends HttpServlet {
                 throw new IllegalArgumentException("Количество точек должно быть не менее 2");
             }
 
-            // Создание функции
-            TabulatedFunction function;
-            if (factory instanceof LinkedListTabulatedFunctionFactory) {
-                function = factory.create(mathFunction, xFrom, xTo, pointsCount);
-            } else {
-                double[] xValues = new double[pointsCount];
-                double[] yValues = new double[pointsCount];
-                double step = (xTo - xFrom) / (pointsCount - 1);
+            // Создание функции через фабрику
+            TabulatedFunction function = factory.create(mathFunction, xFrom, xTo, pointsCount);
 
-                for (int i = 0; i < pointsCount; i++) {
-                    xValues[i] = xFrom + i * step;
-                    yValues[i] = mathFunction.apply(xValues[i]);
-                }
-
-                function = factory.create(xValues, yValues);
-            }
-
-            // Формирование ответа
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "Функция успешно создана из " + functionName);
-            result.put("pointsCount", function.getCount());
-            result.put("leftBound", function.leftBound());
-            result.put("rightBound", function.rightBound());
-
-            sendJsonResponse(response, result);
+            // Используем новый метод отправки ответа
+            sendSuccessResponse(response, function, functionName, returnTo, panel);
 
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Неверный формат числа: " + e.getMessage());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Ошибка при создании функции: " + e.getMessage());
         }
     }
 
@@ -393,5 +445,36 @@ public class FunctionUIController extends HttpServlet {
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t");
+    }
+    private void sendSuccessResponse(HttpServletResponse response, TabulatedFunction function,
+                                     String functionName, String returnTo, String panel)
+            throws IOException {
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("message", "Функция успешно создана" + (functionName != null ? " из " + functionName : ""));
+        result.put("pointsCount", function.getCount());
+        result.put("leftBound", function.leftBound());
+        result.put("rightBound", function.rightBound());
+
+        // Добавляем данные функции для передачи
+        double[] xValues = new double[function.getCount()];
+        double[] yValues = new double[function.getCount()];
+
+        for (int i = 0; i < function.getCount(); i++) {
+            xValues[i] = function.getX(i);
+            yValues[i] = function.getY(i);
+        }
+
+        result.put("xValues", xValues);
+        result.put("yValues", yValues);
+
+        // Если нужно вернуть данные в родительское окно
+        if (returnTo != null && panel != null) {
+            result.put("returnTo", returnTo);
+            result.put("panel", panel);
+        }
+
+        sendJsonResponse(response, result);
     }
 }
