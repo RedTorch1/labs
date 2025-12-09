@@ -2,6 +2,8 @@ package ui.controllers;
 
 import functions.*;
 import functions.factory.*;
+import io.FunctionsIO;
+import java.util.Date;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
@@ -9,7 +11,7 @@ import java.io.*;
 import java.util.*;
 
 @WebServlet({"/ui/functions", "/ui/functions/*"})
-@MultipartConfig
+@MultipartConfig(maxFileSize = 1024 * 1024 * 10)
 public class FunctionUIController extends HttpServlet {
     private TabulatedFunctionFactory factory;
     private Map<String, MathFunction> functionMap;
@@ -96,6 +98,9 @@ public class FunctionUIController extends HttpServlet {
             } else if (path.equals("/create-from-function")) {
                 // Отображаем форму для создания из функции
                 request.getRequestDispatcher("/WEB-INF/ui/create-from-function.jsp").forward(request, response);
+            } else if (path.equals("/download")) {
+                // Новый endpoint для скачивания файла
+                downloadFunction(request, response);
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Path not found: " + path);
             }
@@ -124,12 +129,15 @@ public class FunctionUIController extends HttpServlet {
                 createFromArrays(request, response);
             } else if (path.equals("/create-from-function")) {
                 createFromFunction(request, response);
+            } else if (path.equals("/upload")) {
+                // Новый endpoint для загрузки файла
+                uploadFunction(request, response);
             } else {
                 throw new IllegalArgumentException("Unknown path: " + path);
             }
         } catch (Exception e) {
             System.err.println("Error in doPost: " + e.getMessage());
-            sendError(response, "Ошибка при создании функции", e, HttpServletResponse.SC_BAD_REQUEST);
+            sendError(response, "Ошибка при обработке запроса", e, HttpServletResponse.SC_BAD_REQUEST);
         }
     }
 
@@ -416,6 +424,14 @@ public class FunctionUIController extends HttpServlet {
                 out.print(value);
             } else if (value instanceof Number) {
                 out.print(value);
+            } else if (value instanceof double[]) {
+                double[] array = (double[]) value;
+                out.print("[");
+                for (int i = 0; i < array.length; i++) {
+                    if (i > 0) out.print(",");
+                    out.print(array[i]);
+                }
+                out.print("]");
             } else {
                 out.print("\"");
                 out.print(escapeJson(String.valueOf(value)));
@@ -446,6 +462,7 @@ public class FunctionUIController extends HttpServlet {
                 .replace("\r", "\\r")
                 .replace("\t", "\\t");
     }
+
     private void sendSuccessResponse(HttpServletResponse response, TabulatedFunction function,
                                      String functionName, String returnTo, String panel)
             throws IOException {
@@ -476,5 +493,284 @@ public class FunctionUIController extends HttpServlet {
         }
 
         sendJsonResponse(response, result);
+    }
+
+    // ========== МЕТОДЫ ДЛЯ РАБОТЫ С ФАЙЛАМИ ==========
+
+    private void uploadFunction(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+
+        System.out.println("=== uploadFunction called ===");
+
+        try {
+            // Получаем uploaded файл
+            Part filePart = request.getPart("file");
+            if (filePart == null) {
+                throw new IllegalArgumentException("Файл не был загружен");
+            }
+
+            String fileName = filePart.getSubmittedFileName();
+            System.out.println("Uploading file: " + fileName);
+
+            // Определяем тип файла по расширению
+            InputStream fileContent = filePart.getInputStream();
+            TabulatedFunction function;
+
+            if (fileName.toLowerCase().endsWith(".dat")) {
+                // Бинарная сериализация через FunctionsIO
+                BufferedInputStream bufferedStream = new BufferedInputStream(fileContent);
+                function = FunctionsIO.deserialize(bufferedStream);
+                System.out.println("Function deserialized from .dat file");
+
+            } else if (fileName.toLowerCase().endsWith(".txt")) {
+                // Текстовый формат через FunctionsIO.readTabulatedFunction
+                BufferedReader reader = new BufferedReader(new InputStreamReader(fileContent, "UTF-8"));
+                function = FunctionsIO.readTabulatedFunction(reader, factory);
+                System.out.println("Function read from .txt file");
+
+            } else if (fileName.toLowerCase().endsWith(".json")) {
+                // JSON формат (для совместимости)
+                function = parseJsonToFunction(fileContent);
+                System.out.println("Function parsed from JSON file");
+
+            } else {
+                throw new IllegalArgumentException("Неподдерживаемый формат файла. Используйте .dat, .txt или .json");
+            }
+
+            // Подготавливаем данные для отправки
+            Map<String, Object> result = prepareFunctionData(function, "Функция успешно загружена из файла: " + fileName);
+
+            // Добавляем параметры возврата
+            String returnTo = request.getParameter("returnTo");
+            String panel = request.getParameter("panel");
+            if (returnTo != null && panel != null) {
+                result.put("returnTo", returnTo);
+                result.put("panel", panel);
+            }
+
+            sendJsonResponse(response, result);
+
+        } catch (Exception e) {
+            System.err.println("Error uploading file: " + e.getMessage());
+            e.printStackTrace();
+
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", "Ошибка при загрузке файла");
+            error.put("details", e.getMessage());
+
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            sendJsonResponse(response, error);
+        }
+    }
+
+    private TabulatedFunction parseJsonToFunction(InputStream inputStream) throws Exception {
+        // Читаем JSON
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+        StringBuilder jsonBuilder = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            jsonBuilder.append(line);
+        }
+
+        String json = jsonBuilder.toString();
+        System.out.println("Parsing JSON: " + json.substring(0, Math.min(200, json.length())) + "...");
+
+        // Простой парсинг JSON без внешних библиотек
+        json = json.trim();
+        if (!json.startsWith("{") || !json.endsWith("}")) {
+            throw new IllegalArgumentException("Invalid JSON format");
+        }
+
+        // Извлекаем массивы xValues и yValues
+        String xValuesStr = extractJsonArray(json, "xValues");
+        String yValuesStr = extractJsonArray(json, "yValues");
+
+        if (xValuesStr == null || yValuesStr == null) {
+            throw new IllegalArgumentException("JSON должен содержать xValues и yValues");
+        }
+
+        double[] xValues = parseJsonArray(xValuesStr);
+        double[] yValues = parseJsonArray(yValuesStr);
+
+        if (xValues.length != yValues.length) {
+            throw new IllegalArgumentException("Массивы xValues и yValues должны быть одинаковой длины");
+        }
+
+        return factory.create(xValues, yValues);
+    }
+
+    private String extractJsonArray(String json, String key) {
+        String searchKey = "\"" + key + "\":";
+        int start = json.indexOf(searchKey);
+        if (start == -1) return null;
+
+        start += searchKey.length();
+        int bracketStart = json.indexOf('[', start);
+        if (bracketStart == -1) return null;
+
+        int bracketCount = 1;
+        int end = bracketStart + 1;
+
+        while (end < json.length() && bracketCount > 0) {
+            char c = json.charAt(end);
+            if (c == '[') bracketCount++;
+            if (c == ']') bracketCount--;
+            end++;
+        }
+
+        return json.substring(bracketStart, end);
+    }
+
+    private double[] parseJsonArray(String arrayStr) {
+        // Убираем квадратные скобки и разбиваем по запятым
+        String content = arrayStr.substring(1, arrayStr.length() - 1).trim();
+        if (content.isEmpty()) {
+            return new double[0];
+        }
+
+        String[] parts = content.split(",");
+        double[] result = new double[parts.length];
+
+        for (int i = 0; i < parts.length; i++) {
+            result[i] = Double.parseDouble(parts[i].trim());
+        }
+
+        return result;
+    }
+
+    private void downloadFunction(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        System.out.println("=== downloadFunction called ===");
+
+        try {
+            // Получаем данные функции из параметров
+            String xValuesParam = request.getParameter("xValues");
+            String yValuesParam = request.getParameter("yValues");
+            String format = request.getParameter("format");
+            String fileName = request.getParameter("fileName");
+
+            if (xValuesParam == null || yValuesParam == null) {
+                throw new IllegalArgumentException("Не указаны данные функции");
+            }
+
+            // Парсим массивы
+            double[] xValues = parseDoubleArray(xValuesParam);
+            double[] yValues = parseDoubleArray(yValuesParam);
+
+            if (xValues.length != yValues.length) {
+                throw new IllegalArgumentException("Массивы X и Y должны быть одинаковой длины");
+            }
+
+            // Создаем функцию
+            TabulatedFunction function = factory.create(xValues, yValues);
+
+            // Настраиваем имя файла по умолчанию
+            if (fileName == null || fileName.trim().isEmpty()) {
+                fileName = "function";
+            }
+
+            if (format == null || format.equals("binary")) {
+                // Бинарный формат (.dat) - используем FunctionsIO.serialize()
+                response.setContentType("application/octet-stream");
+                response.setHeader("Content-Disposition",
+                        "attachment; filename=\"" + fileName + ".dat\"");
+
+                // Сериализуем функцию через FunctionsIO
+                BufferedOutputStream bufferedOut = new BufferedOutputStream(response.getOutputStream());
+                FunctionsIO.serialize(bufferedOut, function);
+                bufferedOut.flush();
+
+            } else if (format.equals("txt")) {
+                // Текстовый формат (.txt) - используем FunctionsIO.writeTabulatedFunction
+                response.setContentType("text/plain;charset=UTF-8");
+                response.setHeader("Content-Disposition",
+                        "attachment; filename=\"" + fileName + ".txt\"");
+
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(response.getOutputStream(), "UTF-8"));
+                FunctionsIO.writeTabulatedFunction(writer, function);
+                writer.flush();
+
+            } else if (format.equals("json")) {
+                // JSON формат (дополнительный)
+                response.setContentType("application/json;charset=UTF-8");
+                response.setHeader("Content-Disposition",
+                        "attachment; filename=\"" + fileName + ".json\"");
+
+                Map<String, Object> functionData = prepareFunctionData(function, null);
+                PrintWriter out = response.getWriter();
+
+                // Простой JSON сериализатор
+                out.print("{\"xValues\":[");
+                for (int i = 0; i < xValues.length; i++) {
+                    if (i > 0) out.print(",");
+                    out.print(xValues[i]);
+                }
+                out.print("],\"yValues\":[");
+                for (int i = 0; i < yValues.length; i++) {
+                    if (i > 0) out.print(",");
+                    out.print(yValues[i]);
+                }
+                out.print("],\"pointsCount\":" + function.getCount() + ",");
+                out.print("\"leftBound\":" + function.leftBound() + ",");
+                out.print("\"rightBound\":" + function.rightBound() + ",");
+                out.print("\"createdAt\":\"" + new Date().toString() + "\"}");
+                out.flush();
+            }
+
+        } catch (Exception e) {
+            System.err.println("Error downloading function: " + e.getMessage());
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Ошибка при скачивании: " + e.getMessage());
+        }
+    }
+
+    private Map<String, Object> prepareFunctionData(TabulatedFunction function, String message) {
+        Map<String, Object> result = new HashMap<>();
+
+        if (message != null) {
+            result.put("success", true);
+            result.put("message", message);
+        }
+
+        result.put("pointsCount", function.getCount());
+        result.put("leftBound", function.leftBound());
+        result.put("rightBound", function.rightBound());
+
+        double[] xValues = new double[function.getCount()];
+        double[] yValues = new double[function.getCount()];
+
+        for (int i = 0; i < function.getCount(); i++) {
+            xValues[i] = function.getX(i);
+            yValues[i] = function.getY(i);
+        }
+
+        result.put("xValues", xValues);
+        result.put("yValues", yValues);
+
+        return result;
+    }
+
+    private double[] parseDoubleArray(String arrayString) {
+        // Обрабатываем JSON массив или простой список
+        String cleaned = arrayString.trim();
+
+        if (cleaned.startsWith("[") && cleaned.endsWith("]")) {
+            cleaned = cleaned.substring(1, cleaned.length() - 1);
+        }
+
+        if (cleaned.isEmpty()) {
+            return new double[0];
+        }
+
+        String[] parts = cleaned.split(",");
+        double[] result = new double[parts.length];
+
+        for (int i = 0; i < parts.length; i++) {
+            result[i] = Double.parseDouble(parts[i].trim());
+        }
+
+        return result;
     }
 }

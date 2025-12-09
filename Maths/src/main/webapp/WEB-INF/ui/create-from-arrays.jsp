@@ -1,14 +1,24 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Создание функции из массивов</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание функции из массивов</title>
     <style>
+        /* ОСТАВЬТЕ ВСЕ СТИЛИ КАК БЫЛИ, НО ДОБАВЬТЕ ЭТО В НАЧАЛО: */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
             background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
         }
 
         .container {
@@ -23,6 +33,9 @@
         h1 {
             color: #333;
             text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4CAF50;
         }
 
         .form-group {
@@ -53,6 +66,7 @@
             cursor: pointer;
             font-size: 14px;
             margin-right: 10px;
+            transition: background-color 0.3s;
         }
 
         button:hover {
@@ -114,6 +128,7 @@
         .modal-content h3 {
             color: #d32f2f;
             margin-top: 0;
+            margin-bottom: 15px;
         }
 
         .modal-content button {
@@ -137,6 +152,21 @@
             color: #666;
             font-style: italic;
         }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #757575;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .back-btn:hover {
+            background-color: #616161;
+        }
     </style>
 </head>
 <body>
@@ -159,7 +189,7 @@
         </div>
 
         <div style="margin-top: 20px;">
-            <button onclick="goBack()">Назад к списку</button>
+            <button onclick="goBack()" class="back-btn">Назад</button>
         </div>
     </div>
 
@@ -174,6 +204,13 @@
     <script>
         // Получаем контекст приложения
         const contextPath = '<%= request.getContextPath() %>';
+
+        // Получаем параметры возврата из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const returnTo = urlParams.get('returnTo');
+        const panel = urlParams.get('panel');
+
+        console.log('Return parameters - returnTo:', returnTo, 'panel:', panel);
 
         let currentPointsCount = 0;
 
@@ -224,10 +261,12 @@
                 const tdX = document.createElement('td');
                 const inputX = document.createElement('input');
                 inputX.type = 'number';
-                inputX.id = 'x' + i;          // Важно: уникальный ID
-                inputX.name = 'x' + i;        // Важно: уникальное имя
+                inputX.id = 'x' + i;
+                inputX.name = 'x' + i;
                 inputX.step = 'any';
                 inputX.required = true;
+                inputX.style.width = '90%';
+                inputX.style.padding = '5px';
                 tdX.appendChild(inputX);
                 row.appendChild(tdX);
 
@@ -235,10 +274,12 @@
                 const tdY = document.createElement('td');
                 const inputY = document.createElement('input');
                 inputY.type = 'number';
-                inputY.id = 'y' + i;          // Важно: уникальный ID
-                inputY.name = 'y' + i;        // Важно: уникальное имя
+                inputY.id = 'y' + i;
+                inputY.name = 'y' + i;
                 inputY.step = 'any';
                 inputY.required = true;
+                inputY.style.width = '90%';
+                inputY.style.padding = '5px';
                 tdY.appendChild(inputY);
                 row.appendChild(tdY);
 
@@ -270,6 +311,10 @@
             // Создаем URLSearchParams для отправки данных
             const params = new URLSearchParams();
             params.append('pointsCount', currentPointsCount.toString());
+
+            // Добавляем параметры возврата только если они есть
+            if (returnTo) params.append('returnTo', returnTo);
+            if (panel) params.append('panel', panel);
 
             let hasError = false;
 
@@ -339,10 +384,38 @@
                 })
                 .then(data => {
                     console.log('Успешный ответ:', data);
-                    alert(data.message + '\n' +
-                          'Количество точек: ' + data.pointsCount + '\n' +
-                          'Интервал: [' + data.leftBound + ', ' + data.rightBound + ']');
-                    goBack();
+
+                    // Проверяем, открыто ли это окно из операций
+                    if (returnTo === 'operations' && window.opener && !window.opener.closed) {
+                        // Передаем данные в родительское окно операций
+                        try {
+                            if (window.opener.receiveFunctionData) {
+                                window.opener.receiveFunctionData(parseInt(panel), data);
+                                window.close();
+                                return;
+                            }
+                        } catch (e) {
+                            console.warn('Не удалось вызвать функцию в родительском окне:', e);
+                        }
+                    }
+
+                    // Если не из операций или не удалось передать данные
+                    if (returnTo === 'operations') {
+                        // Используем localStorage для передачи данных
+                        localStorage.setItem('createdFunctionData', JSON.stringify({
+                            ...data,
+                            panel: panel
+                        }));
+                        window.close();
+                    } else {
+                        // Показываем сообщение об успехе
+                        alert(data.message + '\n' +
+                              'Количество точек: ' + data.pointsCount + '\n' +
+                              'Интервал: [' + data.leftBound + ', ' + data.rightBound + ']');
+
+                        // Возвращаемся на главную
+                        window.location.href = contextPath + '/ui';
+                    }
                 })
                 .catch(error => {
                     console.error('Ошибка fetch:', error);
@@ -352,23 +425,46 @@
         }
 
         function showError(title, message) {
-            document.getElementById('errorTitle').textContent = title;
-            document.getElementById('errorMessage').textContent = message;
-            document.getElementById('errorModal').style.display = 'flex';
+            const errorTitle = document.getElementById('errorTitle');
+            const errorMessage = document.getElementById('errorMessage');
+            const errorModal = document.getElementById('errorModal');
+
+            if (errorTitle && errorMessage && errorModal) {
+                errorTitle.textContent = title;
+                errorMessage.textContent = message;
+                errorModal.style.display = 'flex';
+            } else {
+                console.error('Элементы модального окна не найдены');
+                alert(title + ': ' + message);
+            }
         }
 
         function closeErrorModal() {
-            document.getElementById('errorModal').style.display = 'none';
+            const errorModal = document.getElementById('errorModal');
+            if (errorModal) {
+                errorModal.style.display = 'none';
+            }
         }
 
         function goBack() {
-            window.location.href = contextPath + '/ui';
+            if (returnTo === 'operations') {
+                window.close();
+            } else {
+                window.location.href = contextPath + '/ui';
+            }
         }
 
         // Генерируем таблицу при загрузке
         window.onload = function() {
             console.log('Page loaded, generating initial table...');
             generateTable();
+
+            // Проверяем, есть ли сообщение об ошибке в URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            if (error) {
+                showError('Ошибка', decodeURIComponent(error));
+            }
         };
     </script>
 </body>

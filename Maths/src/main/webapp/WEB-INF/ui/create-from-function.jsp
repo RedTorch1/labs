@@ -1,16 +1,24 @@
 <%-- src/main/webapp/WEB-INF/ui/create-from-function.jsp --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Создание функции из математической функции</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание функции из математической функции</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
             background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
         }
 
         .container {
@@ -25,6 +33,9 @@
         h1 {
             color: #333;
             text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #2196F3;
         }
 
         .form-group {
@@ -72,6 +83,7 @@
             font-size: 16px;
             width: 100%;
             margin-top: 10px;
+            transition: background-color 0.3s;
         }
 
         button:hover {
@@ -108,6 +120,7 @@
         .modal-content h3 {
             color: #d32f2f;
             margin-top: 0;
+            margin-bottom: 15px;
         }
 
         .modal-content button {
@@ -136,7 +149,7 @@
             border-left: 4px solid #2196F3;
         }
 
-        .back-button {
+        .back-btn {
             display: inline-block;
             margin-top: 20px;
             padding: 10px 20px;
@@ -145,9 +158,13 @@
             text-decoration: none;
             border-radius: 4px;
             text-align: center;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
         }
 
-        .back-button:hover {
+        .back-btn:hover {
             background-color: #616161;
         }
     </style>
@@ -183,9 +200,9 @@
 
             <button type="button" onclick="createFunction()" id="createBtn">Создать функцию</button>
             <div id="loading" class="loading">Создание функции...</div>
-        </form>
 
-        <a href="${pageContext.request.contextPath}/ui" class="back-button">Назад к выбору метода</a>
+            <button type="button" onclick="goBack()" class="back-btn">Назад</button>
+        </form>
     </div>
 
     <div id="errorModal" class="error-modal">
@@ -197,9 +214,19 @@
     </div>
 
     <script>
+        // Получаем контекст приложения
+        const contextPath = '<%= request.getContextPath() %>';
+
+        // Получаем параметры возврата из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const returnTo = urlParams.get('returnTo');
+        const panel = urlParams.get('panel');
+
+        console.log('Return parameters - returnTo:', returnTo, 'panel:', panel);
+
         // Загрузка списка функций при загрузке страницы
         window.onload = function() {
-            fetch('${pageContext.request.contextPath}/ui/functions')
+            fetch(contextPath + '/ui/functions')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Ошибка загрузки: ' + response.status);
@@ -263,6 +290,10 @@
 
             const formData = new FormData(form);
 
+            // Добавляем параметры возврата только если они есть
+            if (returnTo) formData.append('returnTo', returnTo);
+            if (panel) formData.append('panel', panel);
+
             // Дополнительная валидация
             const xFrom = parseFloat(document.getElementById('xFrom').value);
             const xTo = parseFloat(document.getElementById('xTo').value);
@@ -286,7 +317,7 @@
             document.getElementById('loading').style.display = 'block';
             document.getElementById('createBtn').disabled = true;
 
-            fetch('${pageContext.request.contextPath}/ui/functions/create-from-function', {
+            fetch(contextPath + '/ui/functions/create-from-function', {
                 method: 'POST',
                 body: formData
             })
@@ -302,12 +333,40 @@
                 return response.json();
             })
             .then(data => {
-                alert(data.message + '\n' +
-                      'Функция: ' + formData.get('functionName') + '\n' +
-                      'Количество точек: ' + data.pointsCount + '\n' +
-                      'Интервал: [' + data.leftBound + ', ' + data.rightBound + ']');
-                // Можно закрыть окно или перейти куда-то
-                window.location.href = '${pageContext.request.contextPath}/ui';
+                console.log('Успешный ответ:', data);
+
+                // Проверяем, открыто ли это окно из операций
+                if (returnTo === 'operations' && window.opener && !window.opener.closed) {
+                    // Передаем данные в родительское окно операций
+                    try {
+                        if (window.opener.receiveFunctionData) {
+                            window.opener.receiveFunctionData(parseInt(panel), data);
+                            window.close();
+                            return;
+                        }
+                    } catch (e) {
+                        console.warn('Не удалось вызвать функцию в родительском окне:', e);
+                    }
+                }
+
+                // Если не из операций или не удалось передать данные
+                if (returnTo === 'operations') {
+                    // Используем localStorage для передачи данных
+                    localStorage.setItem('createdFunctionData', JSON.stringify({
+                        ...data,
+                        panel: panel
+                    }));
+                    window.close();
+                } else {
+                    // Показываем сообщение об успехе
+                    alert(data.message + '\n' +
+                          'Функция: ' + formData.get('functionName') + '\n' +
+                          'Количество точек: ' + data.pointsCount + '\n' +
+                          'Интервал: [' + data.leftBound + ', ' + data.rightBound + ']');
+
+                    // Возвращаемся на главную
+                    window.location.href = contextPath + '/ui';
+                }
             })
             .catch(error => {
                 showError('Ошибка создания функции', error.message);
@@ -315,13 +374,33 @@
         }
 
         function showError(title, message) {
-            document.getElementById('errorTitle').textContent = title;
-            document.getElementById('errorMessage').textContent = message;
-            document.getElementById('errorModal').style.display = 'flex';
+            const errorTitle = document.getElementById('errorTitle');
+            const errorMessage = document.getElementById('errorMessage');
+            const errorModal = document.getElementById('errorModal');
+
+            if (errorTitle && errorMessage && errorModal) {
+                errorTitle.textContent = title;
+                errorMessage.textContent = message;
+                errorModal.style.display = 'flex';
+            } else {
+                console.error('Элементы модального окна не найдены');
+                alert(title + ': ' + message);
+            }
         }
 
         function closeErrorModal() {
-            document.getElementById('errorModal').style.display = 'none';
+            const errorModal = document.getElementById('errorModal');
+            if (errorModal) {
+                errorModal.style.display = 'none';
+            }
+        }
+
+        function goBack() {
+            if (returnTo === 'operations') {
+                window.close();
+            } else {
+                window.location.href = contextPath + '/ui';
+            }
         }
     </script>
 </body>

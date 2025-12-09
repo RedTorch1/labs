@@ -453,23 +453,39 @@
             input.onchange = function(event) {
                 const file = event.target.files[0];
                 if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        try {
-                            const functionData = JSON.parse(e.target.result);
-                            setFunctionData(panelNumber, functionData);
-                            showMessage('Функция успешно загружена из файла!', 'success');
-                        } catch (error) {
-                            showMessage('Ошибка загрузки файла: ' + error.message, 'error');
-                        } finally {
-                            showLoading(panelNumber, false);
-                        }
-                    };
-                    reader.onerror = function() {
-                        showMessage('Ошибка чтения файла', 'error');
+                    // Создаем FormData для отправки файла
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('returnTo', 'operations');
+                    formData.append('panel', panelNumber.toString());
+
+                    // Отправляем файл на сервер
+                    fetch(contextPath + '/ui/functions/upload', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
                         showLoading(panelNumber, false);
-                    };
-                    reader.readAsText(file);
+
+                        if (!response.ok) {
+                            return response.json().then(error => {
+                                throw new Error(error.details || error.error || 'Ошибка загрузки');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Обрабатываем данные функции
+                            setFunctionData(panelNumber, data);
+                            showMessage(data.message, 'success');
+                        } else {
+                            throw new Error(data.error || 'Ошибка загрузки файла');
+                        }
+                    })
+                    .catch(error => {
+                        showMessage('Ошибка загрузки файла: ' + error.message, 'error');
+                    });
                 } else {
                     showLoading(panelNumber, false);
                 }
@@ -484,18 +500,31 @@
                 return;
             }
 
-            // Создаем blob с данными
-            const blob = new Blob([JSON.stringify(functionData, null, 2)], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
+            // ПРОСТОЙ ВАРИАНТ - без выбора формата
+            const defaultName = 'function_' + panelNumber;
+            const fileName = prompt('Введите имя файла:', defaultName);
 
-            // Создаем ссылку для скачивания
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'function_' + panelNumber + '_' + new Date().toISOString().slice(0,10) + '.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            if (!fileName) return;
+
+            // Подготавливаем данные
+            const xValuesStr = JSON.stringify(functionData.xValues);
+            const yValuesStr = JSON.stringify(functionData.yValues);
+
+            // Создаем URL для скачивания (бинарный формат по умолчанию)
+            const url = contextPath + '/ui/functions/download?' +
+                'xValues=' + encodeURIComponent(xValuesStr) +
+                '&yValues=' + encodeURIComponent(yValuesStr) +
+                '&format=binary' +
+                '&fileName=' + encodeURIComponent(fileName);
+
+            // Инициируем скачивание
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName + '.dat';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
 
             showMessage('Функция успешно сохранена!', 'success');
         }
@@ -506,17 +535,29 @@
                 return;
             }
 
-            const blob = new Blob([JSON.stringify(resultData, null, 2)], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-
-            const a = document.createElement('a');
-            a.href = url;
+            // ПРОСТОЙ ВАРИАНТ - без выбора формата
             const operationName = getOperationName(resultData.operation);
-            a.download = 'result_' + operationName + '_' + new Date().toISOString().slice(0,10) + '.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            const defaultName = 'result_' + operationName;
+            const fileName = prompt('Введите имя файла:', defaultName);
+
+            if (!fileName) return;
+
+            const xValuesStr = JSON.stringify(resultData.xValues);
+            const yValuesStr = JSON.stringify(resultData.yValues);
+
+            const url = contextPath + '/ui/functions/download?' +
+                'xValues=' + encodeURIComponent(xValuesStr) +
+                '&yValues=' + encodeURIComponent(yValuesStr) +
+                '&format=binary' +
+                '&fileName=' + encodeURIComponent(fileName);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName + '.dat';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
 
             showMessage('Результат успешно сохранен!', 'success');
         }
@@ -527,7 +568,6 @@
                 case 'subtract': return 'subtraction';
                 case 'multiply': return 'multiplication';
                 case 'divide': return 'division';
-                case 'differentiation': return 'derivative';
                 default: return 'result';
             }
         }

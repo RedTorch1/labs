@@ -1,4 +1,3 @@
-// src/main/java/ui/services/TabulatedFunctionOperationService.java
 package ui.services;
 
 import functions.TabulatedFunction;
@@ -9,6 +8,10 @@ public class TabulatedFunctionOperationService {
 
     public TabulatedFunctionOperationService(TabulatedFunctionFactory factory) {
         this.factory = factory;
+    }
+
+    public TabulatedFunctionFactory getFactory() {
+        return factory;
     }
 
     public TabulatedFunction add(TabulatedFunction f1, TabulatedFunction f2) {
