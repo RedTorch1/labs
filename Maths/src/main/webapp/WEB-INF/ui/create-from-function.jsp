@@ -217,10 +217,9 @@
         // Получаем контекст приложения
         const contextPath = '<%= request.getContextPath() %>';
 
-        // Получаем параметры возврата из URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const returnTo = urlParams.get('returnTo');
-        const panel = urlParams.get('panel');
+        // Получаем параметры возврата
+        const returnTo = '<%= request.getParameter("returnTo") != null ? request.getParameter("returnTo") : "main" %>';
+        const panel = '<%= request.getParameter("panel") != null ? request.getParameter("panel") : "1" %>';
 
         console.log('Return parameters - returnTo:', returnTo, 'panel:', panel);
 
@@ -290,9 +289,9 @@
 
             const formData = new FormData(form);
 
-            // Добавляем параметры возврата только если они есть
-            if (returnTo) formData.append('returnTo', returnTo);
-            if (panel) formData.append('panel', panel);
+            // Добавляем параметры возврата
+            formData.append('returnTo', returnTo);
+            formData.append('panel', panel);
 
             // Дополнительная валидация
             const xFrom = parseFloat(document.getElementById('xFrom').value);
@@ -333,44 +332,54 @@
                 return response.json();
             })
             .then(data => {
-                console.log('Успешный ответ:', data);
+                console.log('Функция создана:', data);
 
-                // Проверяем, открыто ли это окно из операций
-                if (returnTo === 'operations' && window.opener && !window.opener.closed) {
-                    // Передаем данные в родительское окно операций
-                    try {
-                        if (window.opener.receiveFunctionData) {
-                            window.opener.receiveFunctionData(parseInt(panel), data);
-                            window.close();
-                            return;
-                        }
-                    } catch (e) {
-                        console.warn('Не удалось вызвать функцию в родительском окне:', e);
-                    }
-                }
-
-                // Если не из операций или не удалось передать данные
-                if (returnTo === 'operations') {
-                    // Используем localStorage для передачи данных
-                    localStorage.setItem('createdFunctionData', JSON.stringify({
-                        ...data,
-                        panel: panel
-                    }));
-                    window.close();
-                } else {
-                    // Показываем сообщение об успехе
-                    alert(data.message + '\n' +
-                          'Функция: ' + formData.get('functionName') + '\n' +
-                          'Количество точек: ' + data.pointsCount + '\n' +
-                          'Интервал: [' + data.leftBound + ', ' + data.rightBound + ']');
-
-                    // Возвращаемся на главную
-                    window.location.href = contextPath + '/ui';
-                }
+                // Универсальный метод возврата данных
+                returnFunctionData(data);
             })
             .catch(error => {
                 showError('Ошибка создания функции', error.message);
             });
+        }
+
+        // Универсальная функция возврата данных
+        function returnFunctionData(data) {
+            console.log('Возвращаем данные для:', returnTo, 'panel:', panel);
+
+            // Создаем объект с данными для передачи
+            const result = {
+                ...data,
+                returnTo: returnTo,
+                panel: panel,
+                timestamp: Date.now()
+            };
+
+            // Пытаемся передать через window.opener
+            if (window.opener && !window.opener.closed) {
+                try {
+                    // Универсальный метод
+                    if (window.opener.handleFunctionData) {
+                        window.opener.handleFunctionData(result);
+                    } else if (returnTo === 'operations' && window.opener.receiveFunctionData) {
+                        // Для обратной совместимости
+                        window.opener.receiveFunctionData(parseInt(panel), data);
+                    } else if (returnTo === 'differentiation' && window.opener.receiveFunctionData) {
+                        // Для обратной совместимости
+                        window.opener.receiveFunctionData(data);
+                    } else {
+                        throw new Error('Функция приема данных не найдена');
+                    }
+                    window.close();
+                    return true;
+                } catch (e) {
+                    console.warn('Ошибка передачи данных через opener:', e);
+                }
+            }
+
+            // Если не удалось через opener, используем localStorage
+            localStorage.setItem('createdFunctionData', JSON.stringify(result));
+            window.close();
+            return false;
         }
 
         function showError(title, message) {
@@ -396,7 +405,7 @@
         }
 
         function goBack() {
-            if (returnTo === 'operations') {
+            if (returnTo === 'operations' || returnTo === 'differentiation') {
                 window.close();
             } else {
                 window.location.href = contextPath + '/ui';

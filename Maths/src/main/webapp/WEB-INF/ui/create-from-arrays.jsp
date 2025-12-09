@@ -207,8 +207,8 @@
 
         // Получаем параметры возврата из URL
         const urlParams = new URLSearchParams(window.location.search);
-        const returnTo = urlParams.get('returnTo');
-        const panel = urlParams.get('panel');
+        const returnTo = urlParams.get('returnTo') || 'main';
+        const panel = urlParams.get('panel') || '1';
 
         console.log('Return parameters - returnTo:', returnTo, 'panel:', panel);
 
@@ -311,10 +311,8 @@
             // Создаем URLSearchParams для отправки данных
             const params = new URLSearchParams();
             params.append('pointsCount', currentPointsCount.toString());
-
-            // Добавляем параметры возврата только если они есть
-            if (returnTo) params.append('returnTo', returnTo);
-            if (panel) params.append('panel', panel);
+            params.append('returnTo', returnTo);
+            params.append('panel', panel);
 
             let hasError = false;
 
@@ -385,43 +383,54 @@
                 .then(data => {
                     console.log('Успешный ответ:', data);
 
-                    // Проверяем, открыто ли это окно из операций
-                    if (returnTo === 'operations' && window.opener && !window.opener.closed) {
-                        // Передаем данные в родительское окно операций
-                        try {
-                            if (window.opener.receiveFunctionData) {
-                                window.opener.receiveFunctionData(parseInt(panel), data);
-                                window.close();
-                                return;
-                            }
-                        } catch (e) {
-                            console.warn('Не удалось вызвать функцию в родительском окне:', e);
-                        }
-                    }
-
-                    // Если не из операций или не удалось передать данные
-                    if (returnTo === 'operations') {
-                        // Используем localStorage для передачи данных
-                        localStorage.setItem('createdFunctionData', JSON.stringify({
-                            ...data,
-                            panel: panel
-                        }));
-                        window.close();
-                    } else {
-                        // Показываем сообщение об успехе
-                        alert(data.message + '\n' +
-                              'Количество точек: ' + data.pointsCount + '\n' +
-                              'Интервал: [' + data.leftBound + ', ' + data.rightBound + ']');
-
-                        // Возвращаемся на главную
-                        window.location.href = contextPath + '/ui';
-                    }
+                    // Универсальный метод возврата данных
+                    returnFunctionData(data);
                 })
                 .catch(error => {
                     console.error('Ошибка fetch:', error);
                     showError('Ошибка создания функции', error.message);
                 });
             }
+        }
+
+        // Универсальная функция возврата данных
+        function returnFunctionData(data) {
+            console.log('Возвращаем данные для:', returnTo, 'panel:', panel);
+
+            // Создаем объект с данными для передачи
+            const result = {
+                ...data,
+                returnTo: returnTo,
+                panel: panel,
+                timestamp: Date.now()
+            };
+
+            // Пытаемся передать через window.opener
+            if (window.opener && !window.opener.closed) {
+                try {
+                    // Универсальный метод
+                    if (window.opener.handleFunctionData) {
+                        window.opener.handleFunctionData(result);
+                    } else if (returnTo === 'operations' && window.opener.receiveFunctionData) {
+                        // Для обратной совместимости
+                        window.opener.receiveFunctionData(parseInt(panel), data);
+                    } else if (returnTo === 'differentiation' && window.opener.receiveFunctionData) {
+                        // Для обратной совместимости
+                        window.opener.receiveFunctionData(data);
+                    } else {
+                        throw new Error('Функция приема данных не найдена');
+                    }
+                    window.close();
+                    return true;
+                } catch (e) {
+                    console.warn('Ошибка передачи данных через opener:', e);
+                }
+            }
+
+            // Если не удалось через opener, используем localStorage
+            localStorage.setItem('createdFunctionData', JSON.stringify(result));
+            window.close();
+            return false;
         }
 
         function showError(title, message) {
@@ -447,7 +456,7 @@
         }
 
         function goBack() {
-            if (returnTo === 'operations') {
+            if (returnTo === 'operations' || returnTo === 'differentiation') {
                 window.close();
             } else {
                 window.location.href = contextPath + '/ui';
@@ -458,13 +467,6 @@
         window.onload = function() {
             console.log('Page loaded, generating initial table...');
             generateTable();
-
-            // Проверяем, есть ли сообщение об ошибке в URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const error = urlParams.get('error');
-            if (error) {
-                showError('Ошибка', decodeURIComponent(error));
-            }
         };
     </script>
 </body>

@@ -418,17 +418,20 @@
         }
 
         function checkForSavedData() {
-            // Проверяем localStorage на наличие сохраненных данных
             const savedData = localStorage.getItem('createdFunctionData');
             if (savedData) {
                 try {
                     const data = JSON.parse(savedData);
+                    const returnTo = data.returnTo;
                     const panelNumber = data.panel || currentFunctionPanel;
 
-                    setFunctionData(panelNumber, data);
-                    showMessage('Функция успешно создана и загружена!', 'success');
+                    // Проверяем, что данные предназначены для operations
+                    if (returnTo === 'operations') {
+                        setFunctionData(parseInt(panelNumber), data);
+                        showMessage('Функция успешно создана и загружена!', 'success');
+                    }
 
-                    // Очищаем localStorage
+                    // Очищаем localStorage в любом случае
                     localStorage.removeItem('createdFunctionData');
                 } catch (error) {
                     showMessage('Ошибка обработки данных функции: ' + error.message, 'error');
@@ -436,7 +439,18 @@
             }
         }
 
-        // Функция для получения данных из дочернего окна
+        // Универсальный обработчик данных
+        window.handleFunctionData = function(data) {
+            console.log('Получены данные через handleFunctionData:', data);
+
+            if (data.returnTo === 'operations') {
+                const panelNumber = data.panel || 1;
+                setFunctionData(parseInt(panelNumber), data);
+                showMessage('Функция успешно создана и загружена!', 'success');
+            }
+        };
+
+        // Функция для получения данных из дочернего окна (для обратной совместимости)
         window.receiveFunctionData = function(panelNumber, data) {
             console.log('Получены данные для панели', panelNumber, ':', data);
             setFunctionData(panelNumber, data);
