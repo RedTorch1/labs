@@ -181,6 +181,11 @@
                 <h3>Создать из функции</h3>
                 <p>Создание функции путем табуляции математической функции</p>
             </div>
+            <div class="menu-card" onclick="openStudyWindow()">
+                <div class="menu-icon">📊</div>
+                <h3>Изучение функций</h3>
+                <p>Графическое изучение табулированной функции</p>
+            </div>
         </div>
 
         <div class="status-bar">
@@ -284,7 +289,9 @@
             // Открываем новое окно для дифференцирования
             window.location.href = contextPath + '/ui/differentiation';
         }
-
+        function openStudyWindow() {
+                window.location.href = contextPath + '/ui/study';
+        }
         // Закрытие модального окна при клике вне его
         window.onclick = function(event) {
             const modal = document.getElementById('settingsModal');
