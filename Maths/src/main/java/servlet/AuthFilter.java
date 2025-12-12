@@ -1,10 +1,8 @@
 package servlet;
 
-import servlet.util.AuthHelper;
-
+import model.User;
 import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.*;
 import java.io.IOException;
 
 public class AuthFilter implements Filter {
@@ -16,45 +14,67 @@ public class AuthFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-        String path = httpRequest.getRequestURI();
+        String requestURI = httpRequest.getRequestURI();
         String method = httpRequest.getMethod();
 
-        System.out.println("AuthFilter: " + method + " " + path);
+        System.out.println("AuthFilter: " + method + " " + requestURI);
 
-        // Публичные endpoints (не требуют аутентификации)
-        if (isPublicEndpoint(path, method)) {
+        // РАЗРЕШАЕМ доступ к эндпоинтам аутентификации без проверки
+        // Это критически важно!
+        if (requestURI.equals("/api/auth") ||
+                requestURI.equals("/api/auth/") ||
+                requestURI.equals("/api/auth/register")) {
+            System.out.println("AuthFilter: Allowing access to auth endpoint without authentication");
             chain.doFilter(request, response);
             return;
         }
 
-        // Проверка аутентификации
-        AuthHelper.UserCredentials user = AuthHelper.authenticate(httpRequest);
-        if (user == null) {
-            System.out.println("Authentication failed for: " + path);
-            AuthHelper.sendAuthError(httpResponse);
+        // Разрешаем доступ к статическим ресурсам и UI страницам
+        if (requestURI.startsWith("/css/") ||
+                requestURI.startsWith("/js/") ||
+                requestURI.startsWith("/images/") ||
+                requestURI.startsWith("/ui/") ||
+                requestURI.equals("/") ||
+                requestURI.endsWith(".jsp")) {
+            System.out.println("AuthFilter: Allowing access to static/UI resource");
+            chain.doFilter(request, response);
             return;
         }
 
-        // Проверка прав доступа
-        if (!AuthHelper.hasPermission(user.role, method, path)) {
-            System.out.println("Access denied for user: " + user.username + " to " + method + " " + path);
-            AuthHelper.sendForbiddenError(httpResponse);
-            return;
+        // Для всех остальных запросов проверяем аутентификацию
+        HttpSession session = httpRequest.getSession(false);
+        boolean isAuthenticated = session != null && session.getAttribute("user") != null;
+
+        // Также проверяем Basic Auth header
+        if (!isAuthenticated) {
+            String authHeader = httpRequest.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Basic ")) {
+                // Если есть Basic Auth header, пропускаем
+                // AuthServlet сам проверит валидность
+                System.out.println("AuthFilter: Basic Auth header found, passing to servlet");
+                chain.doFilter(request, response);
+                return;
+            }
         }
 
-        System.out.println("Access granted for user: " + user.username + " with role: " + user.role + " to " + method + " " + path);
+        if (!isAuthenticated) {
+            System.out.println("Authentication failed for: " + requestURI);
 
-        // Добавляем информацию о пользователе в запрос
-        request.setAttribute("currentUser", user.username);
-        request.setAttribute("currentUserRole", user.role);
+            // Для API запросов возвращаем 401
+            if (requestURI.startsWith("/api/")) {
+                httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                httpResponse.setContentType("application/json");
+                httpResponse.getWriter().write("{\"error\": \"Authentication required\"}");
+                return;
+            } else {
+                // Для UI запросов перенаправляем на страницу входа
+                httpResponse.sendRedirect(httpRequest.getContextPath() + "/ui/");
+                return;
+            }
+        }
 
+        // Пользователь аутентифицирован - пропускаем дальше
         chain.doFilter(request, response);
-    }
-
-    private boolean isPublicEndpoint(String path, String method) {
-        // Endpoints для регистрации и health check
-        return (path.equals("/lab6/api/auth/register") && method.equals("POST")) ||
-                (path.equals("/lab6/api/health") && method.equals("GET"));
     }
 
     @Override
