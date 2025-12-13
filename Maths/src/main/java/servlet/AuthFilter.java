@@ -20,10 +20,12 @@ public class AuthFilter implements Filter {
         System.out.println("AuthFilter: " + method + " " + requestURI);
 
         // РАЗРЕШАЕМ доступ к эндпоинтам аутентификации без проверки
-        // Это критически важно!
         if (requestURI.equals("/api/auth") ||
                 requestURI.equals("/api/auth/") ||
-                requestURI.equals("/api/auth/register")) {
+                requestURI.equals("/api/auth/register") ||
+                requestURI.equals("/api/auth/login") ||
+                requestURI.equals("/api/functions/save-from-arrays") ||
+                requestURI.startsWith("/api/functions/")){
             System.out.println("AuthFilter: Allowing access to auth endpoint without authentication");
             chain.doFilter(request, response);
             return;
@@ -35,7 +37,8 @@ public class AuthFilter implements Filter {
                 requestURI.startsWith("/images/") ||
                 requestURI.startsWith("/ui/") ||
                 requestURI.equals("/") ||
-                requestURI.endsWith(".jsp")) {
+                requestURI.endsWith(".jsp") ||
+                requestURI.contains(".")) { // все статические файлы
             System.out.println("AuthFilter: Allowing access to static/UI resource");
             chain.doFilter(request, response);
             return;
@@ -50,7 +53,6 @@ public class AuthFilter implements Filter {
             String authHeader = httpRequest.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Basic ")) {
                 // Если есть Basic Auth header, пропускаем
-                // AuthServlet сам проверит валидность
                 System.out.println("AuthFilter: Basic Auth header found, passing to servlet");
                 chain.doFilter(request, response);
                 return;
@@ -60,8 +62,12 @@ public class AuthFilter implements Filter {
         if (!isAuthenticated) {
             System.out.println("Authentication failed for: " + requestURI);
 
-            // Для API запросов возвращаем 401
+            // Для API запросов возвращаем 401 С WWW-Authenticate ЗАГОЛОВКОМ
             if (requestURI.startsWith("/api/")) {
+                System.out.println("AuthFilter: Sending 401 with WWW-Authenticate for API");
+
+                // КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: добавляем заголовок для браузерного Basic Auth
+                httpResponse.setHeader("WWW-Authenticate", "Basic realm=\"API Access\", charset=\"UTF-8\"");
                 httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 httpResponse.setContentType("application/json");
                 httpResponse.getWriter().write("{\"error\": \"Authentication required\"}");
@@ -74,6 +80,7 @@ public class AuthFilter implements Filter {
         }
 
         // Пользователь аутентифицирован - пропускаем дальше
+        System.out.println("AuthFilter: User authenticated, allowing access");
         chain.doFilter(request, response);
     }
 

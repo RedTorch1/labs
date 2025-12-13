@@ -1,4 +1,3 @@
-<%-- src/main/webapp/WEB-INF/ui/create-from-function.jsp --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="ru">
@@ -49,7 +48,7 @@
             color: #555;
         }
 
-        select, input[type="number"] {
+        select, input[type="number"], input[type="text"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
@@ -93,6 +92,14 @@
         button:disabled {
             background-color: #cccccc;
             cursor: not-allowed;
+        }
+
+        button.save-btn {
+            background-color: #4CAF50;
+        }
+
+        button.save-btn:hover {
+            background-color: #45a049;
         }
 
         .error-modal {
@@ -167,6 +174,54 @@
         .back-btn:hover {
             background-color: #616161;
         }
+
+        /* Стили для сообщения об успехе */
+        .success-section {
+            display: none;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .success-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #f0f9f0;
+            padding: 10px 15px;
+            border-radius: 4px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .success-name {
+            font-weight: bold;
+            color: #155724;
+            font-size: 16px;
+        }
+
+        .success-id {
+            color: #0c5460;
+            font-size: 14px;
+            background-color: #d1ecf1;
+            padding: 3px 8px;
+            border-radius: 3px;
+            border: 1px solid #bee5eb;
+        }
+
+        /* Стили для ошибки */
+        .error-style {
+            background-color: #f8d7da !important;
+            border-color: #f5c6cb !important;
+        }
+
+        .error-style .success-name {
+            color: #721c24 !important;
+        }
+
+        .error-style .success-id {
+            color: #856404 !important;
+            background-color: #fff3cd !important;
+            border-color: #ffeaa7 !important;
+        }
     </style>
 </head>
 <body>
@@ -175,8 +230,14 @@
 
         <form id="createFunctionForm">
             <div class="form-group">
-                <label for="functionName">Выберите функцию:</label>
-                <select id="functionName" name="functionName" required>
+                <label for="functionNameInput">Название функции:</label>
+                <input type="text" id="functionNameInput" name="functionNameInput"
+                       placeholder="Введите уникальное название функции" required>
+            </div>
+
+            <div class="form-group">
+                <label for="functionSelect">Выберите математическую функцию:</label>
+                <select id="functionSelect" name="functionSelect" required>
                     <option value="">-- Выберите функцию --</option>
                 </select>
                 <div id="functionDescription" class="function-description" style="display: none;">
@@ -198,10 +259,34 @@
                 <input type="number" id="pointsCount" name="pointsCount" min="2" max="10000" value="100" required>
             </div>
 
-            <button type="button" onclick="createFunction()" id="createBtn">Создать функцию</button>
-            <div id="loading" class="loading">Создание функции...</div>
+            <!-- БЛОК С КНОПКАМИ - ТОЛЬКО ОДИН РАЗ -->
+            <div class="controls">
+                <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+                    <button type="button" onclick="saveToDatabase()" id="saveBtn" class="save-btn"
+                            style="background-color: #4CAF50; padding: 12px 24px; font-size: 16px;">
+                        💾 Сохранить в базу данных
+                    </button>
+                    <button type="button" onclick="createFunction()" id="createBtn"
+                            style="background-color: #757575; padding: 12px 24px; font-size: 16px;">
+                        📤 Создать функцию (для операций)
+                    </button>
+                </div>
 
-            <button type="button" onclick="goBack()" class="back-btn">Назад</button>
+                <span id="loading" class="loading">Обработка...</span>
+
+                <!-- Блок для сообщений -->
+                <div id="successSection" class="success-section">
+                    <div class="success-info">
+                        <span class="success-name" id="successMessage"></span>
+                        <span class="success-id" id="successId"></span>
+                    </div>
+                </div>
+            </div>
+            <!-- КОНЕЦ БЛОКА С КНОПКАМИ -->
+
+            <div style="margin-top: 20px;">
+                <button type="button" onclick="goBack()" class="back-btn">Назад</button>
+            </div>
         </form>
     </div>
 
@@ -220,12 +305,6 @@
             window.location.href = '${pageContext.request.contextPath}/ui/';
         }
 
-        // Устанавливаем имя пользователя если есть элемент
-        const username = localStorage.getItem('username');
-        const userElement = document.getElementById('currentUser');
-        if (username && userElement) {
-            userElement.textContent = username;
-        }
         // Получаем контекст приложения
         const contextPath = '<%= request.getContextPath() %>';
 
@@ -235,106 +314,190 @@
 
         console.log('Return parameters - returnTo:', returnTo, 'panel:', panel);
 
-        // Загрузка списка функций при загрузке страницы
-        window.onload = function() {
-            fetch(contextPath + '/ui/functions')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Ошибка загрузки: ' + response.status);
+        // Функция для вычисления значения функции
+        function calculateFunctionValue(functionName, x) {
+            switch(functionName) {
+                case 'Квадратичная функция':
+                    return x * x;
+                case 'Тождественная функция':
+                    return x;
+                case 'Постоянная функция (0)':
+                    return 0;
+                case 'Постоянная функция (1)':
+                    return 1;
+                case 'Синусоида':
+                    return Math.sin(x);
+                default:
+                    return x;
+            }
+        }
+
+        // Функция для получения ID текущего пользователя
+        function getCurrentUserId() {
+            const storedUserId = localStorage.getItem('userId');
+            if (storedUserId) {
+                return parseInt(storedUserId);
+            }
+            return 333290; // Тестовое значение
+        }
+
+        // Функция для проверки уникальности названия
+        async function checkFunctionNameUniqueness(functionName) {
+            try {
+                const userId = getCurrentUserId();
+
+                // Запрашиваем все функции
+                const response = await fetch(`${contextPath}/api/functions`, {
+                    headers: {
+                        'Authorization': localStorage.getItem('authToken') || '',
+                        'Content-Type': 'application/json'
                     }
-                    return response.json();
-                })
-                .then(functions => {
-                    const select = document.getElementById('functionName');
-                    functions.forEach(funcName => {
-                        const option = document.createElement('option');
-                        option.value = funcName;
-                        option.textContent = funcName;
-                        select.appendChild(option);
-                    });
-
-                    // Добавляем обработчик изменения выбора
-                    select.addEventListener('change', function() {
-                        const descriptionDiv = document.getElementById('functionDescription');
-                        const descriptionText = document.getElementById('descriptionText');
-
-                        if (this.value) {
-                            // Здесь можно добавить более подробные описания
-                            switch(this.value) {
-                                case 'Квадратичная функция':
-                                    descriptionText.textContent = 'f(x) = x²';
-                                    break;
-                                case 'Тождественная функция':
-                                    descriptionText.textContent = 'f(x) = x';
-                                    break;
-                                case 'Постоянная функция (0)':
-                                    descriptionText.textContent = 'f(x) = 0';
-                                    break;
-                                case 'Постоянная функция (1)':
-                                    descriptionText.textContent = 'f(x) = 1';
-                                    break;
-                                case 'Синусоида':
-                                    descriptionText.textContent = 'f(x) = sin(x)';
-                                    break;
-                                default:
-                                    descriptionText.textContent = this.value;
-                            }
-                            descriptionDiv.style.display = 'block';
-                        } else {
-                            descriptionDiv.style.display = 'none';
-                        }
-                    });
-                })
-                .catch(error => {
-                    showError('Ошибка', 'Не удалось загрузить список функций: ' + error.message);
                 });
-        };
 
-        function createFunction() {
-            const form = document.getElementById('createFunctionForm');
+                if (response.ok) {
+                    const allFunctions = await response.json();
 
-            // Базовая валидация
-            if (!form.checkValidity()) {
-                form.reportValidity();
+                    // Фильтруем функции текущего пользователя
+                    const userFunctions = allFunctions.filter(func =>
+                        func.userId && func.userId.toString() === userId.toString()
+                    );
+
+                    // Проверяем, есть ли функция с таким именем
+                    const existingFunction = userFunctions.find(func =>
+                        func.name && func.name.toLowerCase() === functionName.toLowerCase()
+                    );
+
+                    return {
+                        isUnique: !existingFunction,
+                        existingFunction: existingFunction
+                    };
+                }
+                return { isUnique: true };
+            } catch (error) {
+                console.error('Ошибка при проверке уникальности:', error);
+                return { isUnique: true };
+            }
+        }
+
+        // Функция для сохранения в базу данных
+        async function saveToDatabase() {
+            console.log('=== saveToDatabase called ===');
+
+            const functionNameInput = document.getElementById('functionNameInput');
+            const currentFunctionName = functionNameInput.value.trim();
+
+            if (!currentFunctionName) {
+                showError('Ошибка', 'Введите название функции');
                 return;
             }
 
-            const formData = new FormData(form);
+            // Проверяем уникальность названия
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('saveBtn').disabled = true;
 
-            // Добавляем параметры возврата
-            formData.append('returnTo', returnTo);
-            formData.append('panel', panel);
+            try {
+                const uniquenessCheck = await checkFunctionNameUniqueness(currentFunctionName);
 
-            // Дополнительная валидация
+                if (!uniquenessCheck.isUnique) {
+                    const existingFunction = uniquenessCheck.existingFunction;
+                    const existingId = existingFunction.id || existingFunction.functionId || 'N/A';
+                    const existingName = existingFunction.name || existingFunction.functionName || currentFunctionName;
+
+                    // Показываем ошибку в successSection
+                    const successSection = document.getElementById('successSection');
+                    const successMessage = document.getElementById('successMessage');
+                    const successId = document.getElementById('successId');
+
+                    successMessage.textContent = '❌ Функция "' + existingName + '" уже существует!';
+                    successId.textContent = 'ID: ' + existingId;
+
+                    // Стилизуем как ошибку
+                    successSection.style.display = 'block';
+                    const successInfo = successSection.querySelector('.success-info');
+                    successInfo.classList.add('error-style');
+
+                    // Автоматическое скрытие через 5 секунд
+                    setTimeout(() => {
+                        successSection.style.display = 'none';
+                        successInfo.classList.remove('error-style');
+                    }, 5000);
+
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('saveBtn').disabled = false;
+                    return;
+                }
+            } catch (error) {
+                console.warn('Не удалось проверить уникальность:', error);
+                // Продолжаем, даже если проверка не удалась
+            }
+
+            // Проверяем остальные поля
+            const form = document.getElementById('createFunctionForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('saveBtn').disabled = false;
+                return;
+            }
+
+            const functionSelect = document.getElementById('functionSelect').value;
             const xFrom = parseFloat(document.getElementById('xFrom').value);
             const xTo = parseFloat(document.getElementById('xTo').value);
+            const pointsCount = parseInt(document.getElementById('pointsCount').value);
 
             if (isNaN(xFrom) || isNaN(xTo)) {
                 showError('Ошибка', 'Введите корректные числовые значения для интервала');
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('saveBtn').disabled = false;
                 return;
             }
 
             if (xFrom >= xTo) {
                 showError('Ошибка', 'Начало интервала должно быть меньше конца');
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('saveBtn').disabled = false;
                 return;
             }
 
-            const pointsCount = parseInt(document.getElementById('pointsCount').value);
             if (isNaN(pointsCount) || pointsCount < 2 || pointsCount > 10000) {
                 showError('Ошибка', 'Количество точек должно быть от 2 до 10000');
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('saveBtn').disabled = false;
                 return;
             }
 
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('createBtn').disabled = true;
+            // Генерируем точки
+            const step = (xTo - xFrom) / (pointsCount - 1);
+            const points = [];
 
-            fetch(contextPath + '/ui/functions/create-from-function', {
+            for (let i = 0; i < pointsCount; i++) {
+                const x = xFrom + (i * step);
+                const y = calculateFunctionValue(functionSelect, x);
+                points.push({ x: x, y: y });
+            }
+
+            // Подготавливаем данные для отправки
+            const functionData = {
+                name: currentFunctionName,
+                expression: functionSelect,
+                points: points,
+                userId: getCurrentUserId()
+            };
+
+            console.log('Отправляемые данные:', functionData);
+
+            // Отправляем запрос на API
+            fetch(contextPath + '/api/functions/save-from-function', {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': localStorage.getItem('authToken') || ''
+                },
+                body: JSON.stringify(functionData)
             })
             .then(response => {
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('createBtn').disabled = false;
+                document.getElementById('saveBtn').disabled = false;
 
                 if (!response.ok) {
                     return response.json().then(error => {
@@ -346,17 +509,147 @@
             .then(data => {
                 console.log('Функция создана:', data);
 
-                // Универсальный метод возврата данных
-                returnFunctionData(data);
+                // Показываем сообщение об успехе
+                const successSection = document.getElementById('successSection');
+                const successMessage = document.getElementById('successMessage');
+                const successId = document.getElementById('successId');
+
+                successMessage.textContent = '✅ Функция ' + String(data.name || currentFunctionName) + ' успешно создана!';
+                successId.textContent = 'ID: ' + String(data.id);
+                successSection.style.display = 'block';
+
+                // Убираем стили ошибки если были
+                const successInfo = successSection.querySelector('.success-info');
+                successInfo.classList.remove('error-style');
+
+                // Автоматическое скрытие через 5 секунд
+                setTimeout(() => {
+                    successSection.style.display = 'none';
+                }, 5000);
+
+                // Очищаем форму
+                functionNameInput.value = '';
+                document.getElementById('functionSelect').value = '';
+                document.getElementById('xFrom').value = '';
+                document.getElementById('xTo').value = '';
+                document.getElementById('pointsCount').value = '100';
+
             })
             .catch(error => {
+                console.error('Ошибка создания функции:', error);
                 showError('Ошибка создания функции', error.message);
             });
+        }
+
+        // Функция для создания функции (передача данных в родительское окно)
+        async function createFunction() {
+            console.log('=== createFunction called ===');
+
+            const form = document.getElementById('createFunctionForm');
+
+            // Базовая валидация
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const functionSelect = document.getElementById('functionSelect').value;
+            const xFrom = parseFloat(document.getElementById('xFrom').value);
+            const xTo = parseFloat(document.getElementById('xTo').value);
+            const pointsCount = parseInt(document.getElementById('pointsCount').value);
+
+            // Валидация данных
+            if (!functionSelect) {
+                showError('Ошибка', 'Выберите математическую функцию');
+                return;
+            }
+
+            if (isNaN(xFrom) || isNaN(xTo)) {
+                showError('Ошибка', 'Введите корректные числовые значения для интервала');
+                return;
+            }
+
+            if (xFrom >= xTo) {
+                showError('Ошибка', 'Начало интервала должно быть меньше конца');
+                return;
+            }
+
+            if (isNaN(pointsCount) || pointsCount < 2 || pointsCount > 10000) {
+                showError('Ошибка', 'Количество точек должно быть от 2 до 10000');
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('createBtn').disabled = true;
+
+            try {
+                // Генерируем точки функции
+                const step = (xTo - xFrom) / (pointsCount - 1);
+                const points = [];
+                const xValues = [];
+                const yValues = [];
+
+                for (let i = 0; i < pointsCount; i++) {
+                    const x = xFrom + (i * step);
+                    const y = calculateFunctionValue(functionSelect, x);
+                    points.push({ x: x, y: y });
+                    xValues.push(x);
+                    yValues.push(y);
+                }
+
+                // Создаем объект с данными функции
+                const functionData = {
+                    name: functionSelect + ' [' + xFrom + ', ' + xTo + ']',
+                    expression: functionSelect,
+                    xValues: xValues,
+                    yValues: yValues,
+                    points: points,
+                    xFrom: xFrom,
+                    xTo: xTo,
+                    pointsCount: pointsCount,
+                    timestamp: Date.now()
+                };
+
+                console.log('Создана функция:', functionData);
+
+                // Пытаемся передать данные в родительское окно
+                const transferred = returnFunctionData(functionData);
+
+                if (!transferred) {
+                    // Если не удалось передать через opener
+                    // Показываем сообщение об успехе
+                    const successSection = document.getElementById('successSection');
+                    const successMessage = document.getElementById('successMessage');
+                    const successId = document.getElementById('successId');
+
+                    successMessage.textContent = '✅ Функция создана! Используется в текущем окне.';
+                    successId.textContent = 'Точек: ' + pointsCount;
+                    successSection.style.display = 'block';
+
+                    // Автоматическое скрытие через 5 секунд
+                    setTimeout(() => {
+                        successSection.style.display = 'none';
+                    }, 5000);
+
+                    // Сохраняем в localStorage для использования на этой же странице
+                    localStorage.setItem('currentFunctionData', JSON.stringify(functionData));
+
+                    console.log('Функция сохранена в localStorage для использования на этой странице');
+                }
+
+            } catch (error) {
+                console.error('Ошибка создания функции:', error);
+                showError('Ошибка создания функции', error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('createBtn').disabled = false;
+            }
         }
 
         // Универсальная функция возврата данных
         function returnFunctionData(data) {
             console.log('Возвращаем данные для:', returnTo, 'panel:', panel);
+            console.log('Данные функции:', data);
 
             // Создаем объект с данными для передачи
             const result = {
@@ -369,31 +662,76 @@
             // Пытаемся передать через window.opener
             if (window.opener && !window.opener.closed) {
                 try {
+                    console.log('Попытка передачи данных через opener...');
+
                     // Универсальный метод
                     if (window.opener.handleFunctionData) {
+                        console.log('Используем handleFunctionData');
                         window.opener.handleFunctionData(result);
-                    } else if (returnTo === 'operations' && window.opener.receiveFunctionData) {
-                        // Для обратной совместимости
-                        window.opener.receiveFunctionData(parseInt(panel), data);
-                    } else if (returnTo === 'differentiation' && window.opener.receiveFunctionData) {
-                        // Для обратной совместимости
-                        window.opener.receiveFunctionData(data);
-                    } else {
-                        throw new Error('Функция приема данных не найдена');
+                        window.close();
+                        return true;
                     }
-                    window.close();
-                    return true;
+                    // Для обратной совместимости с operations
+                    else if (returnTo === 'operations' && window.opener.receiveFunctionData) {
+                        console.log('Используем receiveFunctionData для operations');
+                        window.opener.receiveFunctionData(parseInt(panel), data);
+                        window.close();
+                        return true;
+                    }
+                    // Для обратной совместимости с differentiation
+                    else if (returnTo === 'differentiation' && window.opener.receiveFunctionData) {
+                        console.log('Используем receiveFunctionData для differentiation');
+                        window.opener.receiveFunctionData(data);
+                        window.close();
+                        return true;
+                    }
+                    // Для обратной совместимости с study
+                    else if (returnTo === 'study' && window.opener.receiveFunctionData) {
+                        console.log('Используем receiveFunctionData для study');
+                        window.opener.receiveFunctionData(data);
+                        window.close();
+                        return true;
+                    }
+                    else {
+                        console.log('Функция приема данных не найдена в opener');
+                        return false;
+                    }
                 } catch (e) {
                     console.warn('Ошибка передачи данных через opener:', e);
+                    return false;
                 }
             }
 
             // Если не удалось через opener, используем localStorage
+            console.log('Используем localStorage для передачи данных');
             localStorage.setItem('createdFunctionData', JSON.stringify(result));
-            window.close();
+
+            // Не закрываем окно, если нет opener
             return false;
         }
+        // Проверяем, было ли окно открыто другой страницей
+        function isWindowOpenedByParent() {
+            return returnTo !== 'main' && returnTo !== '';
+        }
 
+        // Можем обновить отображение кнопок в зависимости от контекста
+        function updateUIForContext() {
+            const saveBtn = document.getElementById('saveBtn');
+            const createBtn = document.getElementById('createBtn');
+
+            if (isWindowOpenedByParent()) {
+                // Если окно открыто родительской страницей, делаем кнопку createFunction более заметной
+                createBtn.style.backgroundColor = '#2196F3';
+                createBtn.innerHTML = '📤 Передать функцию в ' + returnTo;
+                createBtn.title = 'Вернет данные в родительское окно и закроет это окно';
+            } else {
+                // Если открыто напрямую, делаем кнопку saveToDatabase более заметной
+                saveBtn.style.backgroundColor = '#4CAF50';
+                saveBtn.innerHTML = '💾 Сохранить в базу данных';
+                createBtn.innerHTML = '🧪 Создать функцию (для теста)';
+                createBtn.style.backgroundColor = '#757575';
+            }
+        }
         function showError(title, message) {
             const errorTitle = document.getElementById('errorTitle');
             const errorMessage = document.getElementById('errorMessage');
@@ -423,6 +761,60 @@
                 window.location.href = contextPath + '/ui';
             }
         }
+
+        // Загрузка списка функций при загрузке страницы
+        window.onload = function() {
+            updateUIForContext();
+            fetch(contextPath + '/ui/functions')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ошибка загрузки: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(functions => {
+                    const select = document.getElementById('functionSelect');
+                    functions.forEach(funcName => {
+                        const option = document.createElement('option');
+                        option.value = funcName;
+                        option.textContent = funcName;
+                        select.appendChild(option);
+                    });
+
+                    select.addEventListener('change', function() {
+                        const descriptionDiv = document.getElementById('functionDescription');
+                        const descriptionText = document.getElementById('descriptionText');
+
+                        if (this.value) {
+                            switch(this.value) {
+                                case 'Квадратичная функция':
+                                    descriptionText.textContent = 'f(x) = x²';
+                                    break;
+                                case 'Тождественная функция':
+                                    descriptionText.textContent = 'f(x) = x';
+                                    break;
+                                case 'Постоянная функция (0)':
+                                    descriptionText.textContent = 'f(x) = 0';
+                                    break;
+                                case 'Постоянная функция (1)':
+                                    descriptionText.textContent = 'f(x) = 1';
+                                    break;
+                                case 'Синусоида':
+                                    descriptionText.textContent = 'f(x) = sin(x)';
+                                    break;
+                                default:
+                                    descriptionText.textContent = this.value;
+                            }
+                            descriptionDiv.style.display = 'block';
+                        } else {
+                            descriptionDiv.style.display = 'none';
+                        }
+                    });
+                })
+                .catch(error => {
+                    showError('Ошибка', 'Не удалось загрузить список функций: ' + error.message);
+                });
+        };
     </script>
 </body>
 </html>
