@@ -17,7 +17,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 
-@SpringBootTest
+@SpringBootTest(properties = "spring.profiles.active=test")
 public class PerformanceTests {
 
     @Autowired
@@ -43,8 +43,10 @@ public class PerformanceTests {
 
         functionService.getOrComputePoints(f.getId(), -5, 5, 1);
 
-        Path results = Path.of("results.csv");
-        Files.createDirectories(results.getParent());
+        Path dir = Path.of("target", "performance");
+        Files.createDirectories(dir);
+
+        Path results = dir.resolve("results.csv");
         FileWriter fw = new FileWriter(results.toFile(), false);
 
         fw.write("algorithm,time_ms\n");

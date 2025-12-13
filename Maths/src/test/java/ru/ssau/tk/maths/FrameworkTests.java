@@ -1,10 +1,12 @@
 package ru.ssau.tk.maths;
 
+import org.springframework.context.annotation.Import;
 import ru.ssau.tk.maths.entity.Function;
 import ru.ssau.tk.maths.entity.Point;
 import ru.ssau.tk.maths.entity.AppUser;
 import ru.ssau.tk.maths.repository.FunctionRepository;
 import ru.ssau.tk.maths.repository.AppUserRepository;
+import ru.ssau.tk.maths.security.SecurityConfig;
 import ru.ssau.tk.maths.service.FunctionService;
 
 import org.junit.jupiter.api.Test;
@@ -15,7 +17,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(properties = "spring.profiles.active=test")
+@Import(SecurityConfig.class)
 public class FrameworkTests {
 
     @Autowired

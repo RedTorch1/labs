@@ -1,29 +1,38 @@
--- create_tables.sql
--- users
-CREATE TABLE IF NOT EXISTS app_user (
-  id SERIAL PRIMARY KEY,
-  username VARCHAR(100) NOT NULL UNIQUE,
-  password_hash VARCHAR(256) NOT NULL,
-  created_at TIMESTAMP DEFAULT now()
+-- =========================
+-- Таблица пользователей
+-- =========================
+DROP TABLE IF EXISTS app_user CASCADE;
+
+CREATE TABLE app_user (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(255) NOT NULL
 );
 
--- functions
-CREATE TABLE IF NOT EXISTS func (
-  id SERIAL PRIMARY KEY,
-  user_id INT NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
-  name VARCHAR(200) NOT NULL,
-  expression TEXT,
-  created_at TIMESTAMP DEFAULT now()
+-- =========================
+-- Таблица функций
+-- =========================
+DROP TABLE IF EXISTS function CASCADE;
+
+CREATE TABLE function (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    expression VARCHAR(1000) NOT NULL,
+    user_id INT NOT NULL,
+    CONSTRAINT fk_function_user FOREIGN KEY(user_id) REFERENCES app_user(id)
 );
 
--- points
-CREATE TABLE IF NOT EXISTS point (
-  id BIGSERIAL PRIMARY KEY,
-  function_id INT NOT NULL REFERENCES func(id) ON DELETE CASCADE,
-  x_value DOUBLE PRECISION NOT NULL,
-  y_value DOUBLE PRECISION NOT NULL,
-  UNIQUE (function_id, x_value)
-);
+-- =========================
+-- Таблица точек
+-- =========================
+DROP TABLE IF EXISTS point CASCADE;
 
-CREATE INDEX IF NOT EXISTS idx_point_function ON point(function_id);
-CREATE INDEX IF NOT EXISTS idx_point_function_x ON point(function_id, x_value);
+CREATE TABLE point (
+    id SERIAL PRIMARY KEY,
+    function_id INT NOT NULL,
+    x_value NUMERIC(20,10) NOT NULL,
+    y_value NUMERIC(20,10) NOT NULL,
+    CONSTRAINT fk_point_function FOREIGN KEY(function_id) REFERENCES function(id),
+    CONSTRAINT unique_point UNIQUE (function_id, x_value)
+);

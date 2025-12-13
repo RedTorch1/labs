@@ -12,7 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableMethodSecurity
-@Profile("!test")   // <===== КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ
+//@Profile("!test")   // <===== КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ
 public class SecurityConfig {
 
     @Bean
