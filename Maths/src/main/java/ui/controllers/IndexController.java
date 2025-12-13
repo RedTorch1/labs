@@ -6,7 +6,7 @@ import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.*;
 
-@WebServlet("/ui")
+@WebServlet({"/ui", "/ui/"})
 public class IndexController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

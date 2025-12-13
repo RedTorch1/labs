@@ -351,6 +351,18 @@
     </div>
 
     <script>
+        // ПРОВЕРКА АВТОРИЗАЦИИ
+        if (localStorage.getItem('isAuthenticated') !== 'true') {
+            alert('Пожалуйста, войдите в систему');
+            window.location.href = '${pageContext.request.contextPath}/ui/';
+        }
+
+        // Устанавливаем имя пользователя если есть элемент
+        const username = localStorage.getItem('username');
+        const userElement = document.getElementById('currentUser');
+        if (username && userElement) {
+            userElement.textContent = username;
+        }
         const contextPath = '<%= request.getContextPath() %>';
         let currentFunctionPanel = 1;
         let function1Data = null;
