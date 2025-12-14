@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/users")
 public class AppUserController {
     private final AppUserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -45,16 +45,16 @@ public class AppUserController {
         AppUser u = new AppUser(r.getUsername(), passwordEncoder.encode(r.getPassword()), role);
         u = userRepository.save(u);
         AppUserDto dto = new AppUserDto(u.getId(), u.getUsername(), u.getRole());
-        return ResponseEntity.created(URI.create("/api/v1/users/" + u.getId())).body(dto);
+        return ResponseEntity.created(URI.create("/api/users/" + u.getId())).body(dto);
     }
 
-    // Register (open) — POST /api/v1/auth/signup (but we keep here for simplicity)
+    // Register (open) — POST /api/auth/signup (but we keep here for simplicity)
     @PostMapping("/signup")
     public ResponseEntity<AppUserDto> signup(@RequestBody CreateUserRequest r) {
         LOG.info("Signup requested: username={}", r.getUsername());
         AppUser u = new AppUser(r.getUsername(), passwordEncoder.encode(r.getPassword()), "ROLE_USER");
         u = userRepository.save(u);
-        return ResponseEntity.created(URI.create("/api/v1/users/" + u.getId()))
+        return ResponseEntity.created(URI.create("/api/users/" + u.getId()))
                 .body(new AppUserDto(u.getId(), u.getUsername(), u.getRole()));
     }
 

@@ -27,9 +27,9 @@ public class SecurityConfig {
         http.csrf().disable()
                 .httpBasic().and()
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/signup").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users/signup").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(uds);

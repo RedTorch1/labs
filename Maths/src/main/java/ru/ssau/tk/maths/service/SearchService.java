@@ -78,8 +78,8 @@ public class SearchService {
         List<Point> pts = pointRepository.findByFunction_IdOrderByXvalueAsc(functionId);
 
         switch (field) {
-            case "x" -> pts.sort(Comparator.comparing(Point::getXValue));
-            case "y" -> pts.sort(Comparator.comparing(Point::getXValue));
+            case "x" -> pts.sort(Comparator.comparing(Point::getxvalue));
+            case "y" -> pts.sort(Comparator.comparing(Point::getxvalue));
             default -> log.warn("Неизвестное поле сортировки: {}", field);
         }
 
@@ -105,8 +105,8 @@ public class SearchService {
         log.info("[RangeSearch] func={} X=[{},{}]", functionId, min, max);
 
         return pointRepository.findByFunction_IdOrderByXvalueAsc(functionId).stream()
-                .filter(p -> p.getXValue().doubleValue() >= min)
-                .filter(p -> p.getXValue().doubleValue() <= max)
+                .filter(p -> p.getxvalue().doubleValue() >= min)
+                .filter(p -> p.getxvalue().doubleValue() <= max)
                 .toList();
     }
 }

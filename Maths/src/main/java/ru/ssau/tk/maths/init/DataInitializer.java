@@ -47,20 +47,30 @@ public class DataInitializer implements CommandLineRunner {
 
         // 2️⃣ Создаём функцию, если её нет
         Function function;
-        var functions = functionRepository.findByUserId(Long.valueOf("Test Function")); // List<Function>
-        if (functions.isEmpty()) {
+        var optionalFunction =
+                functionRepository.findByUser_IdAndName(admin.getId(), "Test Function");
+
+        if (optionalFunction.isPresent()) {
+            function = optionalFunction.get();
+        } else {
             function = new Function("Test Function", "sin(x) + 0.5*x^2", admin);
             functionRepository.save(function);
             System.out.println("Created function: " + function.getName());
-        } else {
-            function = functions.get(0); // берём первую найденную функцию
         }
 
         // 3️⃣ Создаём точку для функции
-        Point point = new Point(function,
-                BigDecimal.valueOf(1.0),
-                BigDecimal.valueOf(2.0));
-        pointRepository.save(point);
-        System.out.println("Created point for function: " + function.getName());
+        var existingPoint = pointRepository
+                .findByFunction_IdAndXvalue(function.getId(), BigDecimal.valueOf(1.0));
+
+        if (existingPoint.isEmpty()) {
+            Point point = new Point(function,
+                    BigDecimal.valueOf(1.0),
+                    BigDecimal.valueOf(2.0));
+            pointRepository.save(point);
+            System.out.println("Created point for function: " + function.getName());
+        } else {
+            System.out.println("Point already exists, skipping");
+        }
+
     }
 }

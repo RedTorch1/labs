@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/functions/{functionId}/points")
+@RequestMapping("/api/functions/{functionId}/points")
 public class PointController {
     private static final Logger LOG = LoggerFactory.getLogger(PointController.class);
 
@@ -33,7 +33,7 @@ public class PointController {
                                                     @RequestParam(defaultValue = "0.1") double step) {
         LOG.info("Get points for functionId={} xmin={} xmax={} step={}", functionId, xmin, xmax, step);
         List<Point> pts = functionService.getOrComputePoints(functionId, xmin, xmax, step);
-        var dto = pts.stream().map(p -> new PointDto(p.getXValue(), p.getYValue())).collect(Collectors.toList());
+        var dto = pts.stream().map(p -> new PointDto(p.getxvalue(), p.getyvalue())).collect(Collectors.toList());
         return ResponseEntity.ok(dto);
     }
 
@@ -44,7 +44,7 @@ public class PointController {
                                                     @RequestParam(defaultValue = "0.1") double step) {
         LOG.info("Recompute points for functionId={} xmin={} xmax={} step={}", functionId, xmin, xmax, step);
         List<Point> pts = functionService.recomputePoints(functionId, xmin, xmax, step);
-        var dto = pts.stream().map(p -> new PointDto(p.getXValue(), p.getYValue())).collect(Collectors.toList());
+        var dto = pts.stream().map(p -> new PointDto(p.getxvalue(), p.getyvalue())).collect(Collectors.toList());
         return ResponseEntity.ok(dto);
     }
 

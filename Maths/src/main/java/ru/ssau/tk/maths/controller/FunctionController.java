@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/functions")
+@RequestMapping("/api/functions")
 public class FunctionController {
     private static final Logger LOG = LoggerFactory.getLogger(FunctionController.class);
     private final FunctionRepository functionRepository;
