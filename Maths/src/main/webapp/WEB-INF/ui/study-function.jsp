@@ -6,58 +6,496 @@
     <meta charset="UTF-8">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <style>
-        /* ВСЕ СТИЛИ ОСТАЮТСЯ ТЕ ЖЕ - как в предыдущей версии */
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f2f5; }
-        .container { max-width: 1400px; margin: 0 auto; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 2px solid #FF9800; }
-        .back-btn { padding: 8px 16px; background-color: #757575; color: white; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
-        .back-btn:hover { background-color: #616161; }
+        /* БАЗОВЫЕ СТИЛИ - ОБЩИЕ ДЛЯ ВСЕХ ТЕМ */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            color: #333;
+        }
 
-        .study-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
-        .function-panel, .chart-panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .function-panel h3, .chart-panel h3 { margin-top: 0; color: #FF9800; text-align: center; }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-        .controls { margin-bottom: 15px; text-align: center; }
-        .controls button { margin: 0 5px; padding: 8px 16px; background-color: #FF9800; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .controls button:hover { background-color: #F57C00; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #FF9800;
+        }
 
-        .function-table { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background-color: #fff3e0; color: #FF9800; position: sticky; top: 0; }
-        .x-column { background-color: #f9f9f9; font-weight: bold; }
-        input[type="number"] { width: 100%; border: 1px solid #ddd; border-radius: 3px; text-align: center; padding: 4px; background: white; }
+        h1 {
+            margin: 0;
+            color: #333;
+        }
 
-        #chartCanvas { max-height: 400px; width: 100%; border: 1px solid #ddd; border-radius: 4px; }
-        .apply-controls { margin-top: 15px; text-align: center; padding: 15px; background: #f8f9fa; border-radius: 6px; }
-        .apply-controls input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 120px; }
-        .apply-controls button { background-color: #FF9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin: 0 5px; }
-        .apply-controls button:hover { background-color: #F57C00; }
-        #result { font-weight: bold; color: #FF9800; font-size: 18px; min-width: 100px; display: inline-block; }
+        .back-btn {
+            padding: 8px 16px;
+            background-color: #757575;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
 
-        .no-data { text-align: center; color: #999; padding: 40px; font-style: italic; }
+        .back-btn:hover {
+            background-color: #616161;
+        }
+
+        .study-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .function-panel, .chart-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .function-panel h3, .chart-panel h3 {
+            margin-top: 0;
+            color: #FF9800;
+            text-align: center;
+        }
+
+        .controls {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .controls button {
+            margin: 0 5px;
+            padding: 8px 16px;
+            background-color: #FF9800;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .controls button:hover {
+            background-color: #F57C00;
+        }
+
+        .function-table {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #333;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #fff3e0;
+            color: #FF9800;
+            position: sticky;
+            top: 0;
+        }
+
+        .x-column {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            text-align: center;
+            padding: 4px;
+            background: white;
+            color: #333;
+        }
+
+        #chartCanvas {
+            max-height: 400px;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .apply-controls {
+            margin-top: 15px;
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            color: #333;
+        }
+
+        .apply-controls input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 120px;
+            color: #333;
+            background: white;
+        }
+
+        .apply-controls button {
+            background-color: #FF9800;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+
+        .apply-controls button:hover {
+            background-color: #F57C00;
+        }
+
+        #result {
+            font-weight: bold;
+            color: #FF9800;
+            font-size: 18px;
+            min-width: 100px;
+            display: inline-block;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+            font-style: italic;
+        }
 
         /* МОДАЛЬНЫЕ ОКНА */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 10px; max-width: 400px; width: 90%; box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-header h3 { margin: 0; color: #333; }
-        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #666; }
-        .close-btn:hover { color: #333; }
-        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-primary { flex: 1; padding: 12px; background-color: #2196F3; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
-        .btn-primary:hover { background-color: #1976D2; }
-        .btn-success { flex: 1; padding: 12px; background-color: #4CAF50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
-        .btn-success:hover { background-color: #45a049; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            color: #333;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            flex: 1;
+            padding: 12px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-primary:hover {
+            background-color: #1976D2;
+        }
+
+        .btn-success {
+            flex: 1;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-success:hover {
+            background-color: #45a049;
+        }
 
         /* СООБЩЕНИЯ */
-        .message { padding: 10px; margin: 10px 0; border-radius: 4px; display: none; }
-        .success-message { background-color: #dff0d8; color: #3c763d; border: 1px solid #d6e9c6; }
-        .error-message { background-color: #f2dede; color: #a94442; border: 1px solid #ebccd1; }
-        .loading { display: none; text-align: center; padding: 10px; color: #666; font-style: italic; }
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .success-message {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+
+        .error-message {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* ========== ТЕМНАЯ ТЕМА ========== */
+        body.dark-theme {
+            background-color: #1a1a1a !important;
+            color: #f0f0f0 !important;
+        }
+
+        /* Текст в темной теме */
+        .dark-theme,
+        .dark-theme h1,
+        .dark-theme .modal-content,
+        .dark-theme .modal-header h3,
+        .dark-theme table,
+        .dark-theme .apply-controls,
+        .dark-theme .no-data {
+            color: #f0f0f0 !important;
+        }
+
+        /* Фоны в темной теме */
+        .dark-theme .function-panel,
+        .dark-theme .chart-panel,
+        .dark-theme .modal-content {
+            background-color: #2d2d2d !important;
+            border: 1px solid #444 !important;
+        }
+
+        .dark-theme .function-table {
+            background-color: #2d2d2d !important;
+            border: 1px solid #555 !important;
+        }
+
+        .dark-theme table {
+            background-color: #2d2d2d !important;
+        }
+
+        .dark-theme th {
+            background-color: #3d3d3d !important;
+            border-color: #555 !important;
+            color: #FFB74D !important;
+        }
+
+        .dark-theme td {
+            border-color: #555 !important;
+        }
+
+        .dark-theme .x-column {
+            background-color: #3d3d3d !important;
+        }
+
+        .dark-theme input[type="number"] {
+            background-color: #3d3d3d !important;
+            color: #f0f0f0 !important;
+            border: 1px solid #555 !important;
+        }
+
+        .dark-theme input[type="number"]:focus {
+            border-color: #FF9800 !important;
+            outline: none !important;
+        }
+
+        /* График */
+        .dark-theme #chartCanvas {
+            background-color: #2d2d2d !important;
+            border: 1px solid #555 !important;
+        }
+
+        /* Контролы для вычисления */
+        .dark-theme .apply-controls {
+            background-color: #3d3d3d !important;
+            border: 1px solid #555 !important;
+        }
+
+        .dark-theme .apply-controls input {
+            background-color: #3d3d3d !important;
+            color: #f0f0f0 !important;
+            border: 1px solid #555 !important;
+        }
+
+        /* Кнопки в темной теме */
+        .dark-theme .back-btn {
+            background-color: #666 !important;
+        }
+
+        .dark-theme .back-btn:hover {
+            background-color: #777 !important;
+        }
+
+        .dark-theme .controls button,
+        .dark-theme .apply-controls button {
+            background-color: #F57C00 !important;
+        }
+
+        .dark-theme .controls button:hover,
+        .dark-theme .apply-controls button:hover {
+            background-color: #EF6C00 !important;
+        }
+
+        .dark-theme .modal-buttons .btn-primary {
+            background-color: #1565c0 !important;
+        }
+
+        .dark-theme .modal-buttons .btn-primary:hover {
+            background-color: #1976D2 !important;
+        }
+
+        .dark-theme .modal-buttons .btn-success {
+            background-color: #2e7d32 !important;
+        }
+
+        .dark-theme .modal-buttons .btn-success:hover {
+            background-color: #388E3C !important;
+        }
+
+        /* Кнопка удаления точки */
+        .dark-theme button[style*="background:#f44336"] {
+            background-color: #c62828 !important;
+        }
+
+        .dark-theme button[style*="background:#f44336"]:hover {
+            background-color: #d32f2f !important;
+        }
+
+        /* Кнопка добавления точки */
+        .dark-theme button[onclick="addPoint()"] {
+            background-color: #666 !important;
+        }
+
+        .dark-theme button[onclick="addPoint()"]:hover {
+            background-color: #777 !important;
+        }
+
+        /* Результат вычисления */
+        .dark-theme #result {
+            color: #FFB74D !important;
+        }
+
+        /* Заголовки панелей */
+        .dark-theme .function-panel h3,
+        .dark-theme .chart-panel h3 {
+            color: #FFB74D !important;
+        }
+
+        .dark-theme header {
+            border-bottom: 2px solid #FFB74D !important;
+        }
+
+        /* Иконки и кнопки закрытия */
+        .dark-theme .close-btn {
+            color: #aaa !important;
+        }
+
+        .dark-theme .close-btn:hover {
+            color: #fff !important;
+        }
+
+        /* Сообщения */
+        .dark-theme .success-message {
+            background-color: #1b5e20 !important;
+            color: #a5d6a7 !important;
+            border-color: #2e7d32 !important;
+        }
+
+        .dark-theme .error-message {
+            background-color: #b71c1c !important;
+            color: #ffcdd2 !important;
+            border-color: #c62828 !important;
+        }
+
+        /* Загрузка */
+        .dark-theme .loading {
+            color: #aaa !important;
+        }
+
+        /* Нет данных */
+        .dark-theme .no-data {
+            color: #aaa !important;
+        }
+
+        /* Кнопки в таблице */
+        .dark-theme button {
+            color: white !important;
+        }
     </style>
 </head>
 <body>
+    <script>
+        // Применяем тему при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+        });
+
+        function applyTheme(theme) {
+            document.body.classList.remove('light-theme', 'dark-theme');
+            if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.add('light-theme');
+            }
+        }
+    </script>
+
     <div class="container">
         <header>
             <h1>📊 Изучение табулированной функции</h1>
@@ -163,8 +601,26 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { title: { display: true, text: 'x' } },
-                        y: { title: { display: true, text: 'f(x)' } }
+                        x: {
+                            title: { display: true, text: 'x' },
+                            grid: {
+                                color: function() {
+                                    return document.body.classList.contains('dark-theme')
+                                        ? 'rgba(255,255,255,0.1)'
+                                        : 'rgba(0,0,0,0.1)';
+                                }
+                            }
+                        },
+                        y: {
+                            title: { display: true, text: 'f(x)' },
+                            grid: {
+                                color: function() {
+                                    return document.body.classList.contains('dark-theme')
+                                        ? 'rgba(255,255,255,0.1)'
+                                        : 'rgba(0,0,0,0.1)';
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -172,7 +628,7 @@
 
         // ✅ ОСНОВНАЯ ФУНКЦИЯ РЕНДЕРИНГА ТАБЛИЦЫ
         function renderTable() {
-            const tbody = document.getElementById('pointsTable');
+            const container = document.getElementById('pointsTable');
 
             if (!functionData.xValues || functionData.xValues.length === 0) {
                 container.innerHTML = '<div class="no-data">Таблица пустая<br><small>Используйте "Создать" или "Загрузить" чтобы добавить данные</small></div>';
@@ -200,7 +656,7 @@
                 tableHTML += '<td>';
                 tableHTML += '<input type="number" step="any" value="' + formatNumber(point.y) + '" ';
                 tableHTML += 'onchange="updateYValue(' + point.originalIndex + ', this.value)" ';
-                tableHTML += 'style="width: 100%; border: 1px solid #ddd; border-radius: 3px; text-align: center; padding: 4px; background: white;">';
+                tableHTML += 'style="width: 100%; border: 1px solid #ddd; border-radius: 3px; text-align: center; padding: 4px;">';
                 tableHTML += '</td>';
                 tableHTML += '<td>';
                 tableHTML += '<button onclick="deletePoint(' + point.originalIndex + ')" ';
@@ -211,7 +667,7 @@
             }
 
             tableHTML += '</tbody></table>';
-            tbody.innerHTML = tableHTML;
+            container.innerHTML = tableHTML;
 
             updateChart();
         }

@@ -12,6 +12,7 @@
             padding: 0;
         }
 
+        /* БАЗОВЫЕ СТИЛИ - ОБЩИЕ ДЛЯ ВСЕХ ТЕМ */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -54,6 +55,8 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 14px;
+            color: #333;
+            background-color: white;
         }
 
         input[type="text"] {
@@ -101,6 +104,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            color: #333;
         }
 
         th, td {
@@ -135,6 +139,7 @@
             max-width: 500px;
             width: 90%;
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            color: #333;
         }
 
         .modal-content h3 {
@@ -181,7 +186,7 @@
             background-color: #616161;
         }
 
-        /* Стили для сообщения об успехе как в main.jsp */
+        /* Стили для сообщения об успехе */
         .success-section {
             display: none;
             margin-top: 10px;
@@ -212,9 +217,168 @@
             border-radius: 3px;
             border: 1px solid #bee5eb;
         }
+
+        /* ========== ТЕМНАЯ ТЕМА ========== */
+        body.dark-theme {
+            background-color: #1a1a1a !important;
+            color: #f0f0f0 !important;
+        }
+
+        /* Текст в темной теме */
+        .dark-theme,
+        .dark-theme h1,
+        .dark-theme label,
+        .dark-theme .modal-content,
+        .dark-theme table,
+        .dark-theme th,
+        .dark-theme td {
+            color: #f0f0f0 !important;
+        }
+
+        /* Фоны в темной теме */
+        .dark-theme .container,
+        .dark-theme .modal-content {
+            background-color: #2d2d2d !important;
+            border: 1px solid #444 !important;
+        }
+
+        .dark-theme #pointsTable,
+        .dark-theme table {
+            background-color: #2d2d2d !important;
+            border: 1px solid #555 !important;
+        }
+
+        .dark-theme th {
+            background-color: #3d3d3d !important;
+            border-color: #555 !important;
+        }
+
+        .dark-theme td {
+            border-color: #555 !important;
+        }
+
+        .dark-theme input[type="number"],
+        .dark-theme input[type="text"] {
+            background-color: #3d3d3d !important;
+            color: #f0f0f0 !important;
+            border: 1px solid #555 !important;
+        }
+
+        .dark-theme input[type="number"]:focus,
+        .dark-theme input[type="text"]:focus {
+            border-color: #2196F3 !important;
+            outline: none !important;
+        }
+
+        /* Кнопки в темной теме */
+        .dark-theme button {
+            background-color: #666 !important;
+        }
+
+        .dark-theme button:hover {
+            background-color: #777 !important;
+        }
+
+        .dark-theme button.save-btn {
+            background-color: #1565c0 !important;
+        }
+
+        .dark-theme button.save-btn:hover {
+            background-color: #1976D2 !important;
+        }
+
+        .dark-theme .back-btn {
+            background-color: #666 !important;
+        }
+
+        .dark-theme .back-btn:hover {
+            background-color: #777 !important;
+        }
+
+        /* Сообщения в темной теме */
+        .dark-theme .success-info {
+            background-color: #1b5e20 !important;
+            border-color: #2e7d32 !important;
+        }
+
+        .dark-theme .success-name {
+            color: #a5d6a7 !important;
+        }
+
+        .dark-theme .success-id {
+            color: #b2ebf2 !important;
+            background-color: #006064 !important;
+            border-color: #00838f !important;
+        }
+
+        /* Ошибки в темной теме */
+        .dark-theme .modal-content h3 {
+            color: #ef9a9a !important;
+        }
+
+        .dark-theme .modal-content button {
+            background-color: #c62828 !important;
+        }
+
+        .dark-theme .modal-content button:hover {
+            background-color: #d32f2f !important;
+        }
+
+        /* Загрузка */
+        .dark-theme .loading {
+            color: #aaa !important;
+        }
+
+        /* Стили для ошибок в success-section */
+        .error-style {
+            background-color: #f8d7da !important;
+            border-color: #f5c6cb !important;
+        }
+
+        .dark-theme .error-style {
+            background-color: #b71c1c !important;
+            border-color: #c62828 !important;
+        }
+
+        .error-style .success-name {
+            color: #721c24 !important;
+        }
+
+        .dark-theme .error-style .success-name {
+            color: #ffcdd2 !important;
+        }
+
+        .error-style .success-id {
+            color: #856404 !important;
+            background-color: #fff3cd !important;
+            border-color: #ffeaa7 !important;
+        }
+
+        .dark-theme .error-style .success-id {
+            color: #ffecb3 !important;
+            background-color: #ff8f00 !important;
+            border-color: #ffa000 !important;
+        }
     </style>
 </head>
 <body>
+    <script>
+        // Применяем тему при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+        });
+
+        function applyTheme(theme) {
+            document.body.classList.remove('light-theme', 'dark-theme');
+            if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.add('light-theme');
+            }
+        }
+    </script>
+
     <div class="container">
         <h1>Создание табулированной функции из массивов</h1>
 
@@ -261,6 +425,7 @@
         <div style="margin-top: 20px;">
             <button onclick="goBack()" class="back-btn">Назад</button>
         </div>
+    </div>
 
     <div id="errorModal" class="error-modal">
         <div class="modal-content">
@@ -380,37 +545,6 @@
                 if (yInput) yInput.value = '';
             }
         }
-        // Функция для проверки уникальности названия функции
-        async function checkFunctionNameUniqueness(functionName) {
-            try {
-                const userId = getCurrentUserId();
-
-                // Запрашиваем все функции пользователя
-                const response = await fetch(`${contextPath}/api/functions/user?userId=${userId}`, {
-                    headers: {
-                        'Authorization': localStorage.getItem('authToken') || ''
-                    }
-                });
-
-                if (response.ok) {
-                    const userFunctions = await response.json();
-
-                    // Проверяем, есть ли функция с таким именем
-                    const existingFunction = userFunctions.find(func =>
-                        func.name && func.name.toLowerCase() === functionName.toLowerCase()
-                    );
-
-                    return {
-                        isUnique: !existingFunction,
-                        existingFunction: existingFunction
-                    };
-                }
-                return { isUnique: true }; // Если ошибка, разрешаем создание
-            } catch (error) {
-                console.error('Ошибка при проверке уникальности:', error);
-                return { isUnique: true }; // При ошибке разрешаем создание
-            }
-        }
 
         // Функция для сохранения в базу данных
         async function saveToDatabase() {
@@ -466,105 +600,7 @@
                 document.getElementById('loading').style.display = 'inline';
                 document.getElementById('saveBtn').disabled = true;
 
-                // 1. Сначала проверяем уникальность названия
-                try {
-                    const userId = getCurrentUserId();
-                    console.log('Проверяем уникальность названия для пользователя:', userId);
-
-                    // Запрашиваем ВСЕ функции (этот endpoint работает, вы его видите)
-                    const checkResponse = await fetch(`${contextPath}/api/functions`, {
-                        headers: {
-                            'Authorization': localStorage.getItem('authToken') || '',
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    if (checkResponse.ok) {
-                        const allFunctions = await checkResponse.json();
-                        console.log('✅ Получены все функции. Всего:', allFunctions.length);
-
-                        // Логируем первые несколько функций для отладки
-                        console.log('Первые 3 функции для примера:', allFunctions.slice(0, 3));
-
-                        // Фильтруем функции текущего пользователя
-                        const userFunctions = allFunctions.filter(func => {
-                            // Проверяем структуру объекта
-                            console.log('Проверяем функцию:', func);
-
-                            // Вариант 1: если userId есть как поле
-                            if (func.userId !== undefined) {
-                                return func.userId.toString() === userId.toString();
-                            }
-
-                            // Вариант 2: если userId есть как user_id
-                            if (func.user_id !== undefined) {
-                                return func.user_id.toString() === userId.toString();
-                            }
-
-                            // Вариант 3: если поле называется иначе
-                            if (func.user !== undefined) {
-                                return func.user.toString() === userId.toString();
-                            }
-
-                            return false;
-                        });
-
-                        console.log(`✅ Найдено ${userFunctions.length} функций у пользователя ${userId}`);
-
-                        // Проверяем, есть ли функция с таким именем
-                        const existingFunction = userFunctions.find(func => {
-                            // Проверяем разные возможные названия полей
-                            const funcName = func.name || func.functionName || func.func_name || '';
-                            return funcName.toLowerCase() === currentFunctionName.toLowerCase();
-                        });
-
-                        if (existingFunction) {
-                            // Безопасное получение данных
-                            const existingId = existingFunction.id || existingFunction.functionId || 'N/A';
-                            const existingName = existingFunction.name || existingFunction.functionName || currentFunctionName;
-
-                            // Показываем ошибку В successSection (а не в модальном окне)
-                            const successSection = document.getElementById('successSection');
-                            const successMessage = document.getElementById('successMessage');
-                            const successId = document.getElementById('successId');
-
-                            // ПРЯМОЕ присвоение для ошибки
-                            successMessage.textContent = '❌ Функция "' + String(existingName) + '" уже существует!';
-                            successId.textContent = 'ID: ' + String(existingId);
-
-                            // Стилизуем как ошибку
-                            successSection.style.display = 'block';
-                            successSection.querySelector('.success-info').style.backgroundColor = '#f8d7da'; // Красный фон
-                            successSection.querySelector('.success-info').style.borderColor = '#f5c6cb';
-                            successMessage.style.color = '#721c24'; // Темно-красный текст
-
-                            // Автоматическое скрытие через 5 секунд
-                            setTimeout(() => {
-                                successSection.style.display = 'none';
-                                // Восстанавливаем стандартные стили
-                                successSection.querySelector('.success-info').style.backgroundColor = '';
-                                successSection.querySelector('.success-info').style.borderColor = '';
-                                successMessage.style.color = '';
-                            }, 5000);
-
-                            document.getElementById('loading').style.display = 'none';
-                            document.getElementById('saveBtn').disabled = false;
-                            return;
-                        }
-
-                        console.log('✅ Название уникально! Продолжаем сохранение...');
-
-                    } else {
-                        const errorText = await checkResponse.text();
-                        console.warn('❌ Не удалось получить список функций. Статус:', checkResponse.status, 'Текст:', errorText);
-                        // Продолжаем без проверки уникальности
-                    }
-                } catch (error) {
-                    console.warn('⚠️ Ошибка при проверке уникальности:', error);
-                    // Продолжаем создание даже если проверка не удалась
-                }
-
-                // 2. Если название уникально или проверка не удалась, сохраняем функцию
+                // Сохраняем функцию
                 const functionData = {
                     name: currentFunctionName,
                     expression: 'Создано из массивов',
@@ -608,12 +644,11 @@
 
                     console.log('Отображаем:', { functionName, functionId, pointsCount });
 
-                    // 1. Показываем сообщение в successSection
+                    // Показываем сообщение в successSection
                     const successSection = document.getElementById('successSection');
                     const successMessage = document.getElementById('successMessage');
                     const successId = document.getElementById('successId');
 
-                    // ПРЯМОЕ присвоение
                     successMessage.textContent = '✅Функция ' + String(functionName) + ' успешно создана! ';
                     successId.textContent = 'ID: ' + String(functionId);
                     successSection.style.display = 'block';
@@ -623,11 +658,11 @@
                         successSection.style.display = 'none';
                     }, 5000);
 
-                    // 2. Очищаем форму
+                    // Очищаем форму
                     document.getElementById('functionName').value = '';
                     document.getElementById('pointsCount').value = '10';
 
-                    // 3. Обновляем таблицу
+                    // Обновляем таблицу
                     generateTable();
 
                     console.log('✅ Функция сохранена! ID:', functionId, 'Название:', functionName);
@@ -644,12 +679,13 @@
         }
 
         // Функция для получения ID текущего пользователя
-        function getCurrentUserId() {
-            // Здесь нужно реализовать получение ID пользователя
-            // Можно через API или из localStorage
-            // Временно возвращаем тестовое значение
-            return 333290; // Замените на реальный ID пользователя
-        }
+                function getCurrentUserId() {
+                    const storedUserId = localStorage.getItem('userId');
+                    if (storedUserId) {
+                        return parseInt(storedUserId);
+                    }
+                    return 333290; // Тестовое значение
+                }
 
         // Функция для создания функции (передача данных в родительское окно)
         async function createFunction() {
@@ -822,33 +858,6 @@
             return false;
         }
 
-        // Проверяем, было ли окно открыто другой страницей
-        function isWindowOpenedByParent() {
-            return returnTo !== 'main' && returnTo !== '';
-        }
-
-        // Обновляем отображение кнопок в зависимости от контекста
-        function updateUIForContext() {
-            const saveBtn = document.getElementById('saveBtn');
-            const createBtn = document.getElementById('createBtn');
-
-            if (isWindowOpenedByParent()) {
-                // Если окно открыто родительской страницей
-                createBtn.style.backgroundColor = '#2196F3';
-                createBtn.innerHTML = '📤 Передать функцию в ' + returnTo;
-                createBtn.title = 'Вернет данные в родительское окно и закроет это окно';
-
-                saveBtn.innerHTML = '💾 Также сохранить в БД';
-            } else {
-                // Если открыто напрямую
-                saveBtn.style.backgroundColor = '#4CAF50';
-                saveBtn.innerHTML = '💾 Сохранить в базу данных';
-
-                createBtn.innerHTML = '📤 Создать функцию (для операций)';
-                createBtn.style.backgroundColor = '#757575';
-            }
-        }
-
         function showError(title, message) {
             const errorTitle = document.getElementById('errorTitle');
             const errorMessage = document.getElementById('errorMessage');
@@ -883,7 +892,6 @@
         window.onload = function() {
             console.log('Page loaded, generating initial table...');
             generateTable();
-            updateUIForContext();
         };
     </script>
 </body>

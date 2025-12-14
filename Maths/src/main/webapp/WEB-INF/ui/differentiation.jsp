@@ -6,11 +6,13 @@
     <title>Дифференцирование функции</title>
     <meta charset="UTF-8">
     <style>
+        /* БАЗОВЫЕ СТИЛИ - ОБЩИЕ ДЛЯ ВСЕХ ТЕМ */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
             background-color: #f0f2f5;
+            color: #333;
         }
 
         .container {
@@ -25,6 +27,11 @@
             margin-bottom: 30px;
             padding-bottom: 15px;
             border-bottom: 2px solid #ddd;
+        }
+
+        h1 {
+            margin: 0;
+            color: #333;
         }
 
         .back-btn {
@@ -54,6 +61,7 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            color: #333;
         }
 
         .function-panel h3 {
@@ -91,6 +99,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            color: #333;
         }
 
         th, td {
@@ -199,6 +208,7 @@
             max-width: 400px;
             width: 90%;
             box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            color: #333;
         }
 
         .modal-header {
@@ -255,9 +265,159 @@
         .btn-success:hover {
             background-color: #45a049;
         }
+
+        /* ========== ТЕМНАЯ ТЕМА ========== */
+        body.dark-theme {
+            background-color: #1a1a1a !important;
+            color: #f0f0f0 !important;
+        }
+
+        /* Текст в темной теме */
+        .dark-theme,
+        .dark-theme h1,
+        .dark-theme .function-panel,
+        .dark-theme .function-panel h3,
+        .dark-theme .modal-content,
+        .dark-theme .modal-header h3,
+        .dark-theme table,
+        .dark-theme .no-data,
+        .dark-theme .loading {
+            color: #f0f0f0 !important;
+        }
+
+        /* Фоны в темной теме */
+        .dark-theme .function-panel,
+        .dark-theme .modal-content {
+            background-color: #2d2d2d !important;
+            border: 1px solid #444 !important;
+        }
+
+        .dark-theme .function-table,
+        .dark-theme table {
+            background-color: #2d2d2d !important;
+            border: 1px solid #555 !important;
+        }
+
+        .dark-theme th {
+            background-color: #3d3d3d !important;
+            border-color: #555 !important;
+        }
+
+        .dark-theme td {
+            border-color: #555 !important;
+        }
+
+        .dark-theme .x-column {
+            background-color: #3d3d3d !important;
+        }
+
+        .dark-theme .editable input {
+            background-color: #2d2d2d !important;
+            color: #f0f0f0 !important;
+            border: none !important;
+        }
+
+        .dark-theme header {
+            border-bottom: 2px solid #444 !important;
+        }
+
+        /* Кнопки в темной теме */
+        .dark-theme .back-btn {
+            background-color: #666 !important;
+        }
+
+        .dark-theme .back-btn:hover {
+            background-color: #777 !important;
+        }
+
+        .dark-theme .controls button,
+        .dark-theme .btn-primary {
+            background-color: #1565c0 !important;
+        }
+
+        .dark-theme .controls button:hover,
+        .dark-theme .btn-primary:hover {
+            background-color: #1976D2 !important;
+        }
+
+        .dark-theme .btn-success {
+            background-color: #2e7d32 !important;
+        }
+
+        .dark-theme .btn-success:hover {
+            background-color: #388E3C !important;
+        }
+
+        .dark-theme .differentiate-btn {
+            background-color: #F57C00 !important;
+        }
+
+        .dark-theme .differentiate-btn:hover {
+            background-color: #EF6C00 !important;
+        }
+
+        /* Формы в темной теме */
+        .dark-theme input {
+            background-color: #3d3d3d !important;
+            color: #f0f0f0 !important;
+            border: 1px solid #555 !important;
+        }
+
+        /* Иконки и кнопки закрытия */
+        .dark-theme .close-btn {
+            color: #aaa !important;
+        }
+
+        .dark-theme .close-btn:hover {
+            color: #fff !important;
+        }
+
+        .dark-theme .arrow {
+            color: #aaa !important;
+        }
+
+        /* Сообщения */
+        .dark-theme .success-message {
+            background-color: #1b5e20 !important;
+            color: #a5d6a7 !important;
+            border-color: #2e7d32 !important;
+        }
+
+        .dark-theme .error-message {
+            background-color: #b71c1c !important;
+            color: #ffcdd2 !important;
+            border-color: #c62828 !important;
+        }
+
+        /* Загрузка */
+        .dark-theme .loading {
+            color: #aaa !important;
+        }
+
+        /* Нет данных */
+        .dark-theme .no-data {
+            color: #aaa !important;
+        }
     </style>
 </head>
 <body>
+    <script>
+        // Применяем тему при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+        });
+
+        function applyTheme(theme) {
+            document.body.classList.remove('light-theme', 'dark-theme');
+            if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.add('light-theme');
+            }
+        }
+    </script>
+
     <div class="container">
         <header>
             <h1>Дифференцирование табулированной функции</h1>
@@ -714,6 +874,10 @@
         // Проверяем URL параметры для загрузки данных при загрузке страницы
         window.onload = function() {
             console.log('Страница дифференцирования загружена');
+
+            // Применяем тему еще раз на всякий случай
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
 
             const urlParams = new URLSearchParams(window.location.search);
             const loadedData = urlParams.get('loadedData');

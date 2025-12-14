@@ -6,11 +6,13 @@
     <title>Табулированные функции</title>
     <meta charset="UTF-8">
     <style>
+        /* БАЗОВЫЕ СТИЛИ - ОБЩИЕ ДЛЯ ВСЕХ ТЕМ */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
             background-color: #f0f2f5;
+            color: #333; /* Базовый цвет текста для светлой темы */
         }
 
         .container {
@@ -113,6 +115,7 @@
             transition: transform 0.3s, box-shadow 0.3s;
             cursor: pointer;
             text-align: center;
+            color: #333; /* Цвет текста в карточке для светлой темы */
         }
 
         .menu-card:hover {
@@ -150,6 +153,11 @@
 
         .factory-info {
             color: #666;
+        }
+
+        .theme-info {
+            color: #666;
+            margin-top: 5px;
         }
 
         /* Модальные окна */
@@ -209,14 +217,17 @@
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
+            color: #333;
         }
 
-        .form-group input {
+        .form-group input,
+        .form-group select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
+            color: #333;
         }
 
         .error-message {
@@ -231,6 +242,117 @@
             font-size: 14px;
             margin-top: 5px;
             display: none;
+        }
+
+        /* ========== ТЕМНАЯ ТЕМА ========== */
+        body.dark-theme {
+            background-color: #1a1a1a !important;
+            color: #f0f0f0 !important;
+        }
+
+        /* Текст в темной теме */
+        .dark-theme,
+        .dark-theme .user-name,
+        .dark-theme .menu-card h3,
+        .dark-theme .status-bar h4,
+        .dark-theme .modal-header h3,
+        .dark-theme .form-group label,
+        .dark-theme .factory-info,
+        .dark-theme .theme-info,
+        .dark-theme .menu-card p {
+            color: #f0f0f0 !important;
+        }
+
+        /* Фоны в темной теме */
+        .dark-theme .container,
+        .dark-theme .menu-card,
+        .dark-theme .status-bar,
+        .dark-theme .modal-content {
+            background-color: #2d2d2d !important;
+        }
+
+        .dark-theme .menu-card {
+            background-color: #3d3d3d !important;
+            border: 1px solid #444 !important;
+        }
+
+        .dark-theme .menu-card:hover {
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3) !important;
+            background-color: #4a4a4a !important;
+        }
+
+        .dark-theme header {
+            border-bottom: 2px solid #444 !important;
+        }
+
+        /* Кнопки в темной теме */
+        .dark-theme .settings-btn {
+            background-color: #666 !important;
+        }
+
+        .dark-theme .settings-btn:hover {
+            background-color: #777 !important;
+        }
+
+        .dark-theme .login-btn {
+            background-color: #2e7d32 !important;
+        }
+
+        .dark-theme .login-btn:hover {
+            background-color: #388E3C !important;
+        }
+
+        .dark-theme .register-btn {
+            background-color: #1565c0 !important;
+        }
+
+        .dark-theme .register-btn:hover {
+            background-color: #1976D2 !important;
+        }
+
+        .dark-theme .logout-btn {
+            background-color: #c62828 !important;
+        }
+
+        .dark-theme .logout-btn:hover {
+            background-color: #d32f2f !important;
+        }
+
+        /* Формы в темной теме */
+        .dark-theme .form-group input,
+        .dark-theme .form-group select {
+            background-color: #3d3d3d !important;
+            color: #f0f0f0 !important;
+            border: 1px solid #555 !important;
+        }
+
+        .dark-theme .form-group input:focus,
+        .dark-theme .form-group select:focus {
+            border-color: #2196F3 !important;
+            outline: none !important;
+        }
+
+        /* Иконки и кнопки закрытия */
+        .dark-theme .close-btn {
+            color: #aaa !important;
+        }
+
+        .dark-theme .close-btn:hover {
+            color: #fff !important;
+        }
+
+        /* Сообщения */
+        .dark-theme .error-message {
+            color: #ff6b6b !important;
+        }
+
+        .dark-theme .success-message {
+            color: #66bb6a !important;
+        }
+
+        /* Логотип - оставляем синий в обеих темах */
+        .dark-theme .logo {
+            color: #2196F3 !important;
         }
     </style>
 </head>
@@ -294,16 +416,19 @@
             <div class="factory-info">
                 Используемая фабрика: <span id="currentFactory">Массив</span>
             </div>
+            <div class="theme-info">
+                Текущая тема: <span id="currentTheme">Светлая</span>
+            </div>
         </div>
     </div>
 
-    <!-- Модальные окна -->
     <div id="settingsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Настройки</h3>
                 <button class="close-btn" onclick="closeSettings()">×</button>
             </div>
+
             <div class="form-group">
                 <label for="factoryType">Тип фабрики для создания функций:</label>
                 <select id="factoryType" style="width: 100%; padding: 10px; margin: 10px 0;">
@@ -311,6 +436,15 @@
                     <option value="linkedlist">Связный список (LinkedListTabulatedFunctionFactory)</option>
                 </select>
             </div>
+
+            <div class="form-group">
+                <label for="themeSelect">Тема оформления:</label>
+                <select id="themeSelect" style="width: 100%; padding: 10px; margin: 10px 0;">
+                    <option value="light">Светлая тема</option>
+                    <option value="dark">Тёмная тема</option>
+                </select>
+            </div>
+
             <div style="margin-top: 20px; text-align: right;">
                 <button onclick="saveSettings()" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
                     Сохранить
@@ -398,11 +532,20 @@
         function checkAuthState() {
             const username = localStorage.getItem('username');
             const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+            const userId = localStorage.getItem('userId');
 
-            if (username && isAuthenticated) {
+            console.log('Auth state:', { username, isAuthenticated, userId });
+
+            if (username && isAuthenticated && userId) {
                 showUserSection(username);
             } else {
                 showGuestSection();
+                // Очищаем устаревшие данные
+                localStorage.removeItem('username');
+                localStorage.removeItem('isAuthenticated');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userRole');
             }
         }
 
@@ -417,7 +560,7 @@
             document.getElementById('guestSection').style.display = 'block';
         }
 
-        // ========== BASIC AUTH ЛОГИН ==========
+        // ========== ПРОСТАЯ ВЕРСИЯ ЛОГИНА (через UserServlet) ==========
         async function performLogin() {
             clearErrors('login');
 
@@ -436,30 +579,43 @@
             loginBtn.disabled = true;
 
             try {
-                // ТОЛЬКО Basic Auth - как работало раньше
-                const authHeader = 'Basic ' + btoa(username + ':' + password);
-
-                console.log('Sending Basic Auth request to:', API.LOGIN);
-
-                // ВАЖНО: Ваш AuthServlet.login() использует AuthHelper.authenticate()
-                // который читает Basic Auth из заголовка
-                // Отправляем POST с Basic Auth и ПУСТЫМ JSON телом
-                const response = await fetch(API.LOGIN, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': authHeader,
-                        'Content-Type': 'application/json'
-                    },
-                    body: '{}' // ПУСТОЕ тело, только Basic Auth в заголовке
+                // 1. Получаем всех пользователей
+                const usersResponse = await fetch(contextPath + '/api/users', {
+                    headers: getAuthHeaders(null)
                 });
 
-                console.log('Response status:', response.status);
+                if (!usersResponse.ok) {
+                    throw new Error('Не удалось получить список пользователей');
+                }
 
-                if (response.ok) {
-                    // Успешный вход через Basic Auth
+                const allUsers = await usersResponse.json();
+                console.log('Все пользователи:', allUsers);
+
+                // 2. Ищем пользователя с таким username
+                const user = allUsers.find(u =>
+                    u.username && u.username.toLowerCase() === username.toLowerCase()
+                );
+
+                if (!user) {
+                    showError('loginGeneralError', 'Пользователь не найден');
+                    return;
+                }
+
+                // 3. ПРОСТАЯ ПРОВЕРКА ПАРОЛЯ (пока без хэширования)
+                // ВНИМАНИЕ: Это временное решение!
+                // В реальном приложении нужно использовать хэширование
+
+                // Проверяем пароль напрямую (пока)
+                if (user.passwordHash === password) {
+                    // Успешный вход
                     localStorage.setItem('username', username);
                     localStorage.setItem('isAuthenticated', 'true');
-                    localStorage.setItem('authToken', authHeader);
+                    localStorage.setItem('userId', user.id || '');
+                    localStorage.setItem('userRole', user.role || 'USER');
+
+                    // Создаем Basic Auth token для будущих запросов
+                    const authToken = 'Basic ' + btoa(username + ':' + password);
+                    localStorage.setItem('authToken', authToken);
 
                     showSuccess('loginSuccessMessage', 'Вход выполнен успешно!');
 
@@ -468,66 +624,19 @@
                         checkAuthState();
                     }, 1000);
                 } else {
-                    const errorText = await response.text();
-                    console.error('Login failed:', response.status, errorText);
-
-                    if (response.status === 401) {
-                        showError('loginGeneralError', 'Неверное имя пользователя или пароль');
-                    } else if (response.status === 400) {
-                        // Может быть сервер ожидает JSON с username/password
-                        // Попробуем отправить JSON с теми же данными
-                        await tryBasicAuthWithJson(username, password);
-                    } else {
-                        showError('loginGeneralError', `Ошибка сервера: ${response.status}`);
-                    }
+                    showError('loginGeneralError', 'Неверный пароль');
                 }
+
             } catch (error) {
                 console.error('Login error:', error);
-                showError('loginGeneralError', 'Ошибка сети: ' + error.message);
+                showError('loginGeneralError', 'Ошибка: ' + error.message);
             } finally {
                 loginBtn.textContent = originalText;
                 loginBtn.disabled = false;
             }
         }
 
-        // Альтернатива: Basic Auth + JSON body
-        async function tryBasicAuthWithJson(username, password) {
-            console.log('Trying Basic Auth with JSON body...');
-
-            const authHeader = 'Basic ' + btoa(username + ':' + password);
-
-            const response = await fetch(API.LOGIN, {
-                method: 'POST',
-                headers: {
-                    'Authorization': authHeader,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    username: username,
-                    password: password
-                })
-            });
-
-            console.log('Basic Auth + JSON response:', response.status);
-
-            if (response.ok) {
-                localStorage.setItem('username', username);
-                localStorage.setItem('isAuthenticated', 'true');
-                localStorage.setItem('authToken', authHeader);
-
-                showSuccess('loginSuccessMessage', 'Вход выполнен успешно!');
-
-                setTimeout(() => {
-                    closeLoginModal();
-                    checkAuthState();
-                }, 1000);
-                return true;
-            }
-
-            return false;
-        }
-
-        // ========== РЕГИСТРАЦИЯ (остается JSON) ==========
+        // ========== ПРОСТАЯ ВЕРСИЯ РЕГИСТРАЦИИ (через UserServlet) ==========
         async function performRegister() {
             clearErrors('register');
 
@@ -545,57 +654,75 @@
             registerBtn.disabled = true;
 
             try {
-                console.log('Sending registration request...');
+                // 1. Проверяем, нет ли уже такого пользователя
+                const checkResponse = await fetch(contextPath + '/api/users/search?username=' + encodeURIComponent(username), {
+                    headers: getAuthHeaders(null)
+                });
 
-                const response = await fetch(API.REGISTER, {
+                if (checkResponse.ok) {
+                    const existingUsers = await checkResponse.json();
+                    if (existingUsers.length > 0) {
+                        showError('registerGeneralError', 'Пользователь с таким именем уже существует');
+                        return;
+                    }
+                }
+
+                // 2. Создаем нового пользователя
+                const newUser = {
+                    username: username,
+                    passwordHash: password, // Прямой пароль (временно)
+                    role: 'USER'
+                };
+
+                const createResponse = await fetch(contextPath + '/api/users', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        username: username,
-                        password: password,
-                        role: 'USER'
-                    })
+                    body: JSON.stringify(newUser)
                 });
 
-                const responseText = await response.text();
-                console.log('Register response:', response.status, responseText);
-
-                if (response.ok) {
+                if (createResponse.ok) {
                     showSuccess('registerSuccessMessage', 'Регистрация успешна! Теперь войдите в систему.');
 
                     setTimeout(() => {
                         closeRegisterModal();
+                        // Автоматически заполняем форму логина
                         document.getElementById('loginUsername').value = username;
                         document.getElementById('loginPassword').value = password;
                         openLoginModal();
                     }, 1500);
                 } else {
-                    if (response.status === 400 || response.status === 409) {
-                        showError('registerGeneralError', 'Пользователь с таким именем уже существует');
-                    } else {
-                        showError('registerGeneralError', `Ошибка регистрации: ${response.status}`);
-                    }
+                    const errorText = await createResponse.text();
+                    showError('registerGeneralError', 'Ошибка создания пользователя: ' + errorText);
                 }
+
             } catch (error) {
                 console.error('Register error:', error);
-                showError('registerGeneralError', 'Ошибка сети: ' + error.message);
+                showError('registerGeneralError', 'Ошибка: ' + error.message);
             } finally {
                 registerBtn.textContent = originalText;
                 registerBtn.disabled = false;
             }
         }
 
-        // ========== ВЫХОД ==========
-        function logout() {
-            localStorage.removeItem('username');
-            localStorage.removeItem('isAuthenticated');
-            localStorage.removeItem('authToken');
-            checkAuthState();
+        // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+        function getAuthHeaders(contentType = 'application/json') {
+            const headers = {};
+
+            // Используем Basic Auth если есть токен
+            const authToken = localStorage.getItem('authToken');
+            if (authToken) {
+                headers['Authorization'] = authToken;
+            }
+
+            if (contentType) {
+                headers['Content-Type'] = contentType;
+            }
+
+            return headers;
         }
 
-        // ========== ВАЛИДАЦИЯ ==========
         function validateRegisterForm(username, password, confirmPassword) {
             let valid = true;
 
@@ -615,6 +742,14 @@
             }
 
             return valid;
+        }
+
+        // ========== ВЫХОД ==========
+        function logout() {
+            localStorage.removeItem('username');
+            localStorage.removeItem('isAuthenticated');
+            localStorage.removeItem('authToken');
+            checkAuthState();
         }
 
         // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
@@ -668,27 +803,87 @@
             clearErrors('register');
         }
 
+        // ========== ТЕМА ==========
+        function applyTheme(theme) {
+            // Удаляем старые классы темы
+            document.body.classList.remove('light-theme', 'dark-theme');
+
+            // Добавляем новый класс
+            if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+                document.getElementById('currentTheme').textContent = 'Тёмная';
+            } else {
+                document.body.classList.add('light-theme');
+                document.getElementById('currentTheme').textContent = 'Светлая';
+            }
+
+            // Сохраняем в localStorage
+            localStorage.setItem('theme', theme);
+
+            // Также сохраняем на сервере для других страниц
+            saveThemeToServer(theme);
+        }
+
+        async function saveThemeToServer(theme) {
+            try {
+                const userId = localStorage.getItem('userId');
+                if (!userId) return;
+
+                await fetch(contextPath + '/api/users/' + userId, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...getAuthHeaders()
+                    },
+                    body: JSON.stringify({
+                        theme: theme
+                    })
+                });
+            } catch (error) {
+                console.log('Не удалось сохранить тему на сервере:', error);
+            }
+        }
+
         // ========== НАСТРОЙКИ ==========
         function saveSettings() {
             const factoryType = document.getElementById('factoryType').value;
-            localStorage.setItem('factoryType', factoryType);
-            updateFactoryDisplay(factoryType);
+            const theme = document.getElementById('themeSelect').value;
 
+            // Сохраняем настройки
+            localStorage.setItem('factoryType', factoryType);
+            localStorage.setItem('theme', theme);
+
+            // Применяем настройки
+            updateFactoryDisplay(factoryType);
+            applyTheme(theme);
+
+            // Сохраняем на сервере
             fetch(contextPath + '/ui/settings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'factoryType=' + encodeURIComponent(factoryType)
+                body: 'factoryType=' + encodeURIComponent(factoryType) +
+                      '&theme=' + encodeURIComponent(theme)
             }).catch(console.error);
 
             closeSettings();
         }
 
+        // Обновите функцию loadSettings():
         function loadSettings() {
             const factoryType = localStorage.getItem('factoryType') || 'array';
+            const theme = localStorage.getItem('theme') || 'light';
+
+            // Устанавливаем значения в селекты
             document.getElementById('factoryType').value = factoryType;
+            document.getElementById('themeSelect').value = theme;
+
+            // Применяем настройки
             updateFactoryDisplay(factoryType);
+            applyTheme(theme);
         }
 
+
+        // Обновите функцию updateFactoryDisplay():
         function updateFactoryDisplay(factoryType) {
             const displayElement = document.getElementById('currentFactory');
             displayElement.textContent = factoryType === 'array'

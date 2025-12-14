@@ -12,6 +12,7 @@
             padding: 0;
         }
 
+        /* БАЗОВЫЕ СТИЛИ - ОБЩИЕ ДЛЯ ВСЕХ ТЕМ */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -55,10 +56,11 @@
             border-radius: 4px;
             font-size: 14px;
             box-sizing: border-box;
+            color: #333;
+            background-color: white;
         }
 
         select {
-            background-color: white;
             cursor: pointer;
         }
 
@@ -122,6 +124,7 @@
             max-width: 500px;
             width: 90%;
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            color: #333;
         }
 
         .modal-content h3 {
@@ -154,6 +157,7 @@
             border-radius: 4px;
             margin-top: 10px;
             border-left: 4px solid #2196F3;
+            color: #333;
         }
 
         .back-btn {
@@ -222,9 +226,144 @@
             background-color: #fff3cd !important;
             border-color: #ffeaa7 !important;
         }
+
+        /* ========== ТЕМНАЯ ТЕМА ========== */
+        body.dark-theme {
+            background-color: #1a1a1a !important;
+            color: #f0f0f0 !important;
+        }
+
+        /* Текст в темной теме */
+        .dark-theme,
+        .dark-theme h1,
+        .dark-theme label,
+        .dark-theme .modal-content,
+        .dark-theme .function-description {
+            color: #f0f0f0 !important;
+        }
+
+        /* Фоны в темной теме */
+        .dark-theme .container,
+        .dark-theme .modal-content,
+        .dark-theme .function-description {
+            background-color: #2d2d2d !important;
+            border: 1px solid #444 !important;
+        }
+
+        .dark-theme .function-description {
+            border-left: 4px solid #1565c0 !important;
+            background-color: #3d3d3d !important;
+        }
+
+        /* Поля ввода в темной теме */
+        .dark-theme select,
+        .dark-theme input[type="number"],
+        .dark-theme input[type="text"] {
+            background-color: #3d3d3d !important;
+            color: #f0f0f0 !important;
+            border: 1px solid #555 !important;
+        }
+
+        .dark-theme select:focus,
+        .dark-theme input[type="number"]:focus,
+        .dark-theme input[type="text"]:focus {
+            border-color: #2196F3 !important;
+            outline: none !important;
+        }
+
+        /* Кнопки в темной теме */
+        .dark-theme button {
+            background-color: #666 !important;
+        }
+
+        .dark-theme button:hover {
+            background-color: #777 !important;
+        }
+
+        .dark-theme button.save-btn {
+            background-color: #2e7d32 !important;
+        }
+
+        .dark-theme button.save-btn:hover {
+            background-color: #388E3C !important;
+        }
+
+        .dark-theme .back-btn {
+            background-color: #666 !important;
+        }
+
+        .dark-theme .back-btn:hover {
+            background-color: #777 !important;
+        }
+
+        /* Сообщения в темной теме */
+        .dark-theme .success-info {
+            background-color: #1b5e20 !important;
+            border-color: #2e7d32 !important;
+        }
+
+        .dark-theme .success-name {
+            color: #a5d6a7 !important;
+        }
+
+        .dark-theme .success-id {
+            color: #b2ebf2 !important;
+            background-color: #006064 !important;
+            border-color: #00838f !important;
+        }
+
+        /* Ошибки в темной теме */
+        .dark-theme .modal-content h3 {
+            color: #ef9a9a !important;
+        }
+
+        .dark-theme .modal-content button {
+            background-color: #c62828 !important;
+        }
+
+        .dark-theme .modal-content button:hover {
+            background-color: #d32f2f !important;
+        }
+
+        .dark-theme .error-style {
+            background-color: #b71c1c !important;
+            border-color: #c62828 !important;
+        }
+
+        .dark-theme .error-style .success-name {
+            color: #ffcdd2 !important;
+        }
+
+        .dark-theme .error-style .success-id {
+            color: #ffecb3 !important;
+            background-color: #ff8f00 !important;
+            border-color: #ffa000 !important;
+        }
+
+        /* Загрузка */
+        .dark-theme .loading {
+            color: #aaa !important;
+        }
     </style>
 </head>
 <body>
+    <script>
+        // Применяем тему при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+        });
+
+        function applyTheme(theme) {
+            document.body.classList.remove('light-theme', 'dark-theme');
+            if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.add('light-theme');
+            }
+        }
+    </script>
+
     <div class="container">
         <h1>Создание функции из математической функции</h1>
 
@@ -259,7 +398,7 @@
                 <input type="number" id="pointsCount" name="pointsCount" min="2" max="10000" value="100" required>
             </div>
 
-            <!-- БЛОК С КНОПКАМИ - ТОЛЬКО ОДИН РАЗ -->
+            <!-- БЛОК С КНОПКАМИ -->
             <div class="controls">
                 <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
                     <button type="button" onclick="saveToDatabase()" id="saveBtn" class="save-btn"
@@ -341,44 +480,6 @@
             return 333290; // Тестовое значение
         }
 
-        // Функция для проверки уникальности названия
-        async function checkFunctionNameUniqueness(functionName) {
-            try {
-                const userId = getCurrentUserId();
-
-                // Запрашиваем все функции
-                const response = await fetch(`${contextPath}/api/functions`, {
-                    headers: {
-                        'Authorization': localStorage.getItem('authToken') || '',
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    const allFunctions = await response.json();
-
-                    // Фильтруем функции текущего пользователя
-                    const userFunctions = allFunctions.filter(func =>
-                        func.userId && func.userId.toString() === userId.toString()
-                    );
-
-                    // Проверяем, есть ли функция с таким именем
-                    const existingFunction = userFunctions.find(func =>
-                        func.name && func.name.toLowerCase() === functionName.toLowerCase()
-                    );
-
-                    return {
-                        isUnique: !existingFunction,
-                        existingFunction: existingFunction
-                    };
-                }
-                return { isUnique: true };
-            } catch (error) {
-                console.error('Ошибка при проверке уникальности:', error);
-                return { isUnique: true };
-            }
-        }
-
         // Функция для сохранения в базу данных
         async function saveToDatabase() {
             console.log('=== saveToDatabase called ===');
@@ -391,52 +492,10 @@
                 return;
             }
 
-            // Проверяем уникальность названия
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('saveBtn').disabled = true;
-
-            try {
-                const uniquenessCheck = await checkFunctionNameUniqueness(currentFunctionName);
-
-                if (!uniquenessCheck.isUnique) {
-                    const existingFunction = uniquenessCheck.existingFunction;
-                    const existingId = existingFunction.id || existingFunction.functionId || 'N/A';
-                    const existingName = existingFunction.name || existingFunction.functionName || currentFunctionName;
-
-                    // Показываем ошибку в successSection
-                    const successSection = document.getElementById('successSection');
-                    const successMessage = document.getElementById('successMessage');
-                    const successId = document.getElementById('successId');
-
-                    successMessage.textContent = '❌ Функция "' + existingName + '" уже существует!';
-                    successId.textContent = 'ID: ' + existingId;
-
-                    // Стилизуем как ошибку
-                    successSection.style.display = 'block';
-                    const successInfo = successSection.querySelector('.success-info');
-                    successInfo.classList.add('error-style');
-
-                    // Автоматическое скрытие через 5 секунд
-                    setTimeout(() => {
-                        successSection.style.display = 'none';
-                        successInfo.classList.remove('error-style');
-                    }, 5000);
-
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('saveBtn').disabled = false;
-                    return;
-                }
-            } catch (error) {
-                console.warn('Не удалось проверить уникальность:', error);
-                // Продолжаем, даже если проверка не удалась
-            }
-
             // Проверяем остальные поля
             const form = document.getElementById('createFunctionForm');
             if (!form.checkValidity()) {
                 form.reportValidity();
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('saveBtn').disabled = false;
                 return;
             }
 
@@ -447,24 +506,21 @@
 
             if (isNaN(xFrom) || isNaN(xTo)) {
                 showError('Ошибка', 'Введите корректные числовые значения для интервала');
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('saveBtn').disabled = false;
                 return;
             }
 
             if (xFrom >= xTo) {
                 showError('Ошибка', 'Начало интервала должно быть меньше конца');
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('saveBtn').disabled = false;
                 return;
             }
 
             if (isNaN(pointsCount) || pointsCount < 2 || pointsCount > 10000) {
                 showError('Ошибка', 'Количество точек должно быть от 2 до 10000');
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('saveBtn').disabled = false;
                 return;
             }
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('saveBtn').disabled = true;
 
             // Генерируем точки
             const step = (xTo - xFrom) / (pointsCount - 1);
@@ -709,29 +765,7 @@
             // Не закрываем окно, если нет opener
             return false;
         }
-        // Проверяем, было ли окно открыто другой страницей
-        function isWindowOpenedByParent() {
-            return returnTo !== 'main' && returnTo !== '';
-        }
 
-        // Можем обновить отображение кнопок в зависимости от контекста
-        function updateUIForContext() {
-            const saveBtn = document.getElementById('saveBtn');
-            const createBtn = document.getElementById('createBtn');
-
-            if (isWindowOpenedByParent()) {
-                // Если окно открыто родительской страницей, делаем кнопку createFunction более заметной
-                createBtn.style.backgroundColor = '#2196F3';
-                createBtn.innerHTML = '📤 Передать функцию в ' + returnTo;
-                createBtn.title = 'Вернет данные в родительское окно и закроет это окно';
-            } else {
-                // Если открыто напрямую, делаем кнопку saveToDatabase более заметной
-                saveBtn.style.backgroundColor = '#4CAF50';
-                saveBtn.innerHTML = '💾 Сохранить в базу данных';
-                createBtn.innerHTML = '🧪 Создать функцию (для теста)';
-                createBtn.style.backgroundColor = '#757575';
-            }
-        }
         function showError(title, message) {
             const errorTitle = document.getElementById('errorTitle');
             const errorMessage = document.getElementById('errorMessage');
@@ -764,7 +798,6 @@
 
         // Загрузка списка функций при загрузке страницы
         window.onload = function() {
-            updateUIForContext();
             fetch(contextPath + '/ui/functions')
                 .then(response => {
                     if (!response.ok) {
