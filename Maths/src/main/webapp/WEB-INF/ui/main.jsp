@@ -282,6 +282,11 @@
                 <h3>Изучение функций</h3>
                 <p>Графическое изучение табулированной функции</p>
             </div>
+            <div class="menu-card" onclick="window.location.href='${pageContext.request.contextPath}/ui/manage-functions'">
+                <div class="menu-icon">⚙️</div>
+                <h3>Управление функциями</h3>
+                <p>Просмотр, редактирование и удаление сохраненных функций</p>
+            </div>
         </div>
 
         <div class="status-bar">

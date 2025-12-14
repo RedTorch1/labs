@@ -25,7 +25,8 @@ public class AuthFilter implements Filter {
                 requestURI.equals("/api/auth/register") ||
                 requestURI.equals("/api/auth/login") ||
                 requestURI.equals("/api/functions/save-from-arrays") ||
-                requestURI.startsWith("/api/functions/")){
+                requestURI.startsWith("/api/functions/") ||
+                requestURI.startsWith("/api/points/")){
             System.out.println("AuthFilter: Allowing access to auth endpoint without authentication");
             chain.doFilter(request, response);
             return;
