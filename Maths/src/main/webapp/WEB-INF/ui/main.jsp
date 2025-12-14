@@ -246,7 +246,7 @@
 
         /* ========== ТЕМНАЯ ТЕМА ========== */
         body.dark-theme {
-            background-color: #1a1a1a !important;
+            background-color: #2d2d2d !important;
             color: #f0f0f0 !important;
         }
 

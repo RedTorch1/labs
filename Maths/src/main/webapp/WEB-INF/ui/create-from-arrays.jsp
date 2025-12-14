@@ -218,6 +218,23 @@
             border: 1px solid #bee5eb;
         }
 
+        /* Стили для ошибок валидации */
+        .error-input {
+            border-color: #f44336 !important;
+            background-color: #ffebee !important;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-size: 12px;
+            margin-top: 3px;
+            display: none;
+        }
+
+        .error-row {
+            background-color: #ffebee !important;
+        }
+
         /* ========== ТЕМНАЯ ТЕМА ========== */
         body.dark-theme {
             background-color: #1a1a1a !important;
@@ -324,40 +341,23 @@
             background-color: #d32f2f !important;
         }
 
+        /* Стили для ошибок в темной теме */
+        .dark-theme .error-input {
+            border-color: #c62828 !important;
+            background-color: #4a0000 !important;
+        }
+
+        .dark-theme .error-message {
+            color: #ff5252 !important;
+        }
+
+        .dark-theme .error-row {
+            background-color: #4a0000 !important;
+        }
+
         /* Загрузка */
         .dark-theme .loading {
             color: #aaa !important;
-        }
-
-        /* Стили для ошибок в success-section */
-        .error-style {
-            background-color: #f8d7da !important;
-            border-color: #f5c6cb !important;
-        }
-
-        .dark-theme .error-style {
-            background-color: #b71c1c !important;
-            border-color: #c62828 !important;
-        }
-
-        .error-style .success-name {
-            color: #721c24 !important;
-        }
-
-        .dark-theme .error-style .success-name {
-            color: #ffcdd2 !important;
-        }
-
-        .error-style .success-id {
-            color: #856404 !important;
-            background-color: #fff3cd !important;
-            border-color: #ffeaa7 !important;
-        }
-
-        .dark-theme .error-style .success-id {
-            color: #ffecb3 !important;
-            background-color: #ff8f00 !important;
-            border-color: #ffa000 !important;
         }
     </style>
 </head>
@@ -388,8 +388,8 @@
         </div>
 
         <div class="form-group">
-            <label for="pointsCount">Количество точек (от 2 до 1000):</label>
-            <input type="number" id="pointsCount" name="pointsCount" min="2" max="1000" value="10">
+            <label for="pointsCount">Количество точек (от 2 до 10000):</label>
+            <input type="number" id="pointsCount" name="pointsCount" min="2" max="10000" value="10">
             <button onclick="generateTable()">Создать таблицу</button>
         </div>
 
@@ -454,12 +454,13 @@
 
         let currentPointsCount = 0;
         let currentFunctionName = '';
+        let validationErrors = {};
 
         function generateTable() {
             console.log('=== generateTable called ===');
 
             const countInput = document.getElementById('pointsCount');
-            const count = parseInt(countInput.value);
+            let count = parseInt(countInput.value);
 
             console.log('Запрошено точек:', count);
 
@@ -468,13 +469,21 @@
                 return;
             }
 
-            if (count > 1000) {
-                showError('Предупреждение', 'Слишком большое количество точек. Ограничено 1000.');
-                currentPointsCount = 1000;
-                countInput.value = 1000;
-            } else {
-                currentPointsCount = count;
+            // Проверяем минимальное количество точек
+            if (count < 2) {
+                showError('Ошибка', 'Минимальное количество точек - 2');
+                count = 2;
+                countInput.value = 2;
             }
+
+            // Проверяем максимальное количество точек
+            if (count > 10000) {
+                showError('Ошибка', 'Максимальное количество точек - 10000');
+                count = 10000;
+                countInput.value = 10000;
+            }
+
+            currentPointsCount = count;
 
             // Создаем таблицу с помощью DOM API вместо строки
             const tableDiv = document.getElementById('pointsTable');
@@ -486,12 +495,13 @@
 
             // Заголовок
             const headerRow = document.createElement('tr');
-            headerRow.innerHTML = '<th>№</th><th>Значение X</th><th>Значение Y</th>';
+            headerRow.innerHTML = '<th>№</th><th>Значение X</th><th>Значение Y</th><th style="width: 150px;">Ошибки</th>';
             thead.appendChild(headerRow);
 
             // Создаем строки
             for (let i = 0; i < currentPointsCount; i++) {
                 const row = document.createElement('tr');
+                row.id = 'row-' + i;
 
                 // Номер
                 const tdNum = document.createElement('td');
@@ -508,6 +518,7 @@
                 inputX.required = true;
                 inputX.style.width = '90%';
                 inputX.style.padding = '5px';
+                inputX.addEventListener('input', () => validateXValues());
                 tdX.appendChild(inputX);
                 row.appendChild(tdX);
 
@@ -523,6 +534,14 @@
                 inputY.style.padding = '5px';
                 tdY.appendChild(inputY);
                 row.appendChild(tdY);
+
+                // Ячейка для сообщений об ошибках
+                const tdError = document.createElement('td');
+                const errorSpan = document.createElement('span');
+                errorSpan.className = 'error-message';
+                errorSpan.id = 'error-' + i;
+                tdError.appendChild(errorSpan);
+                row.appendChild(tdError);
 
                 tbody.appendChild(row);
             }
@@ -544,6 +563,117 @@
                 if (xInput) xInput.value = '';
                 if (yInput) yInput.value = '';
             }
+
+            // Очищаем ошибки валидации
+            validationErrors = {};
+        }
+
+        // Функция для проверки уникальности X значений
+        function validateXValues() {
+            const xValues = [];
+            const duplicates = [];
+
+            // Собираем все X значения
+            for (let i = 0; i < currentPointsCount; i++) {
+                const xInput = document.getElementById('x' + i);
+                if (xInput && xInput.value.trim() !== '') {
+                    const xValue = parseFloat(xInput.value);
+                    if (!isNaN(xValue)) {
+                        xValues.push({index: i, value: xValue});
+                    }
+                }
+            }
+
+            // Проверяем на дубликаты
+            const seen = {};
+            xValues.forEach(item => {
+                if (seen[item.value] !== undefined) {
+                    duplicates.push({index: item.index, duplicateOf: seen[item.value]});
+                } else {
+                    seen[item.value] = item.index;
+                }
+            });
+
+            // Очищаем предыдущие ошибки
+            for (let i = 0; i < currentPointsCount; i++) {
+                const xInput = document.getElementById('x' + i);
+                const errorSpan = document.getElementById('error-' + i);
+                const row = document.getElementById('row-' + i);
+
+                if (xInput) {
+                    xInput.classList.remove('error-input');
+                }
+                if (errorSpan) {
+                    errorSpan.style.display = 'none';
+                    errorSpan.textContent = '';
+                }
+                if (row) {
+                    row.classList.remove('error-row');
+                }
+            }
+
+            // Показываем ошибки для дубликатов
+            duplicates.forEach(dup => {
+                const xInput = document.getElementById('x' + dup.index);
+                const errorSpan = document.getElementById('error-' + dup.index);
+                const row = document.getElementById('row-' + dup.index);
+
+                if (xInput && errorSpan && row) {
+                    xInput.classList.add('error-input');
+                    errorSpan.textContent = `X совпадает со строкой ${dup.duplicateOf + 1}`;
+                    errorSpan.style.display = 'block';
+                    row.classList.add('error-row');
+                }
+            });
+
+            return duplicates.length === 0;
+        }
+
+        // Функция для проверки валидности всех данных
+        function validateAllData() {
+            const errors = [];
+            const xValuesSet = new Set();
+
+            // Проверяем каждую точку
+            for (let i = 0; i < currentPointsCount; i++) {
+                const xInput = document.getElementById('x' + i);
+                const yInput = document.getElementById('y' + i);
+
+                if (!xInput || !yInput) {
+                    errors.push(`Ошибка формы для точки ${i + 1}`);
+                    continue;
+                }
+
+                const xValue = xInput.value.trim();
+                const yValue = yInput.value.trim();
+
+                // Проверяем, что поля не пустые
+                if (xValue === '' || yValue === '') {
+                    errors.push(`Заполните все значения для точки ${i + 1}`);
+                    continue;
+                }
+
+                // Проверяем, что значения - числа
+                if (isNaN(parseFloat(xValue)) || isNaN(parseFloat(yValue))) {
+                    errors.push(`Введите числовые значения для точки ${i + 1}`);
+                    continue;
+                }
+
+                // Проверяем уникальность X
+                const xNum = parseFloat(xValue);
+                if (xValuesSet.has(xNum)) {
+                    errors.push(`X значение в точке ${i + 1} уже используется`);
+                    continue;
+                }
+                xValuesSet.add(xNum);
+            }
+
+            // Проверяем минимальное количество точек
+            if (xValuesSet.size < 2) {
+                errors.push('Необходимо как минимум 2 точки с различными X значениями');
+            }
+
+            return errors;
         }
 
         // Функция для сохранения в базу данных
@@ -559,133 +689,133 @@
                 return;
             }
 
-            // Проверяем заполненность точек
-            let hasError = false;
+            // Проверяем уникальность X
+            if (!validateXValues()) {
+                showError('Ошибка', 'Имеются повторяющиеся значения X. Убедитесь, что все X уникальны.');
+                return;
+            }
+
+            // Проверяем валидность всех данных
+            const validationErrors = validateAllData();
+            if (validationErrors.length > 0) {
+                showError('Ошибка валидации', validationErrors.join('\n'));
+                return;
+            }
+
+            // Собираем данные точек
             const points = [];
+            const xValuesSet = new Set();
 
             for (let i = 0; i < currentPointsCount; i++) {
                 const xInput = document.getElementById('x' + i);
                 const yInput = document.getElementById('y' + i);
 
-                if (!xInput || !yInput) {
-                    showError('Ошибка', `Ошибка формы для точки ${i + 1}`);
-                    hasError = true;
-                    break;
-                }
+                const xValue = parseFloat(xInput.value);
+                const yValue = parseFloat(yInput.value);
 
-                const xValue = xInput.value.trim();
-                const yValue = yInput.value.trim();
-
-                if (xValue === '' || yValue === '') {
-                    showError('Ошибка', `Заполните все значения для точки ${i + 1}`);
-                    hasError = true;
-                    break;
+                // Проверяем уникальность X еще раз
+                if (xValuesSet.has(xValue)) {
+                    showError('Ошибка', `X значение ${xValue} встречается более одного раза`);
+                    return;
                 }
-
-                if (isNaN(parseFloat(xValue)) || isNaN(parseFloat(yValue))) {
-                    showError('Ошибка', `Введите числовые значения для точки ${i + 1}`);
-                    hasError = true;
-                    break;
-                }
+                xValuesSet.add(xValue);
 
                 points.push({
-                    x: parseFloat(xValue),
-                    y: parseFloat(yValue)
+                    x: xValue,
+                    y: yValue
                 });
             }
 
-            if (!hasError) {
-                console.log('Сохраняем функцию в БД:', currentFunctionName);
+            console.log('Сохраняем функцию в БД:', currentFunctionName);
 
-                document.getElementById('loading').style.display = 'inline';
-                document.getElementById('saveBtn').disabled = true;
+            document.getElementById('loading').style.display = 'inline';
+            document.getElementById('saveBtn').disabled = true;
 
-                // Сохраняем функцию
-                const functionData = {
-                    name: currentFunctionName,
-                    expression: 'Создано из массивов',
-                    points: points,
-                    userId: getCurrentUserId()
-                };
+            // Сохраняем функцию
+            const functionData = {
+                name: currentFunctionName,
+                expression: 'Создано из массивов',
+                points: points,
+                userId: getCurrentUserId()
+            };
 
-                console.log('Отправляемые данные:', functionData);
+            console.log('Отправляемые данные:', functionData);
 
-                // Отправляем запрос на API для сохранения
-                fetch(contextPath + '/api/functions/save-from-arrays', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': localStorage.getItem('authToken') || ''
-                    },
-                    body: JSON.stringify(functionData)
-                })
-                .then(response => {
-                    console.log('Ответ от сервера:', response.status);
+            // Отправляем запрос на API для сохранения
+            fetch(contextPath + '/api/functions/save-from-arrays', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': localStorage.getItem('authToken') || ''
+                },
+                body: JSON.stringify(functionData)
+            })
+            .then(response => {
+                console.log('Ответ от сервера:', response.status);
 
-                    if (!response.ok) {
-                        return response.text().then(text => {
-                            try {
-                                const error = JSON.parse(text);
-                                throw new Error(error.error || 'Ошибка сервера');
-                            } catch {
-                                throw new Error(text || `HTTP ${response.status}`);
-                            }
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Функция сохранена:', data);
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        try {
+                            const error = JSON.parse(text);
+                            throw new Error(error.error || 'Ошибка сервера');
+                        } catch {
+                            throw new Error(text || `HTTP ${response.status}`);
+                        }
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Функция сохранена:', data);
 
-                    // Используем данные из ответа сервера
-                    const functionName = data.name || currentFunctionName || 'Функция из массивов';
-                    const functionId = data.id;
-                    const pointsCount = data.pointsCount || points.length;
+                // Используем данные из ответа сервера
+                const functionName = data.name || currentFunctionName || 'Функция из массивов';
+                const functionId = data.id;
+                const pointsCount = data.pointsCount || points.length;
 
-                    console.log('Отображаем:', { functionName, functionId, pointsCount });
+                console.log('Отображаем:', { functionName, functionId, pointsCount });
 
-                    // Показываем сообщение в successSection
-                    const successSection = document.getElementById('successSection');
-                    const successMessage = document.getElementById('successMessage');
-                    const successId = document.getElementById('successId');
+                // Показываем сообщение в successSection
+                const successSection = document.getElementById('successSection');
+                const successMessage = document.getElementById('successMessage');
+                const successId = document.getElementById('successId');
 
-                    successMessage.textContent = '✅Функция ' + String(functionName) + ' успешно создана! ';
-                    successId.textContent = 'ID: ' + String(functionId);
-                    successSection.style.display = 'block';
+                successMessage.textContent = '✅Функция ' + String(functionName) + ' успешно создана! ';
+                successId.textContent = 'ID: ' + String(functionId);
+                successSection.style.display = 'block';
 
-                    // Автоматическое скрытие через 5 секунд
-                    setTimeout(() => {
-                        successSection.style.display = 'none';
-                    }, 5000);
+                // Автоматическое скрытие через 5 секунд
+                setTimeout(() => {
+                    successSection.style.display = 'none';
+                }, 5000);
 
-                    // Очищаем форму
-                    document.getElementById('functionName').value = '';
-                    document.getElementById('pointsCount').value = '10';
+                // Очищаем форму
+                document.getElementById('functionName').value = '';
+                document.getElementById('pointsCount').value = '10';
 
-                    // Обновляем таблицу
-                    generateTable();
+                // Обновляем таблицу
+                generateTable();
 
-                    console.log('✅ Функция сохранена! ID:', functionId, 'Название:', functionName);
-                })
-                .catch(error => {
-                    console.error('Ошибка при сохранении:', error);
-                    showError('Ошибка сохранения', error.message);
-                })
-                .finally(() => {
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('saveBtn').disabled = false;
-                });
-            }
+                console.log('✅ Функция сохранена! ID:', functionId, 'Название:', functionName);
+            })
+            .catch(error => {
+                console.error('Ошибка при сохранении:', error);
+                showError('Ошибка сохранения', error.message);
+            })
+            .finally(() => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('saveBtn').disabled = false;
+            });
         }
 
         // Функция для получения ID текущего пользователя
-                function getCurrentUserId() {
-                    const storedUserId = localStorage.getItem('userId');
-                    if (storedUserId) {
-                        return parseInt(storedUserId);
-                    }
-                    return 333290; // Тестовое значение
-                }
+        function getCurrentUserId() {
+            const storedUserId = localStorage.getItem('userId');
+            if (storedUserId) {
+                return parseInt(storedUserId);
+            }
+            return 333290; // Тестовое значение
+        }
 
         // Функция для создания функции (передача данных в родительское окно)
         async function createFunction() {
@@ -700,47 +830,42 @@
                 return;
             }
 
-            // Проверяем заполненность точек
-            let hasError = false;
+            // Проверяем уникальность X
+            if (!validateXValues()) {
+                showError('Ошибка', 'Имеются повторяющиеся значения X. Убедитесь, что все X уникальны.');
+                return;
+            }
+
+            // Проверяем валидность всех данных
+            const validationErrors = validateAllData();
+            if (validationErrors.length > 0) {
+                showError('Ошибка валидации', validationErrors.join('\n'));
+                return;
+            }
+
+            // Собираем данные точек
             const points = [];
             const xValues = [];
             const yValues = [];
+            const xValuesSet = new Set();
 
             for (let i = 0; i < currentPointsCount; i++) {
                 const xInput = document.getElementById('x' + i);
                 const yInput = document.getElementById('y' + i);
 
-                if (!xInput || !yInput) {
-                    showError('Ошибка', `Ошибка формы для точки ${i + 1}`);
-                    hasError = true;
-                    break;
+                const xValue = parseFloat(xInput.value);
+                const yValue = parseFloat(yInput.value);
+
+                // Проверяем уникальность X еще раз
+                if (xValuesSet.has(xValue)) {
+                    showError('Ошибка', `X значение ${xValue} встречается более одного раза`);
+                    return;
                 }
+                xValuesSet.add(xValue);
 
-                const xValue = xInput.value.trim();
-                const yValue = yInput.value.trim();
-
-                if (xValue === '' || yValue === '') {
-                    showError('Ошибка', `Заполните все значения для точки ${i + 1}`);
-                    hasError = true;
-                    break;
-                }
-
-                if (isNaN(parseFloat(xValue)) || isNaN(parseFloat(yValue))) {
-                    showError('Ошибка', `Введите числовые значения для точки ${i + 1}`);
-                    hasError = true;
-                    break;
-                }
-
-                const xNum = parseFloat(xValue);
-                const yNum = parseFloat(yValue);
-
-                points.push({ x: xNum, y: yNum });
-                xValues.push(xNum);
-                yValues.push(yNum);
-            }
-
-            if (hasError) {
-                return;
+                points.push({ x: xValue, y: yValue });
+                xValues.push(xValue);
+                yValues.push(yValue);
             }
 
             document.getElementById('loading').style.display = 'block';

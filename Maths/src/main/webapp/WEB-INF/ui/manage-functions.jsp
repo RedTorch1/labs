@@ -13,6 +13,7 @@
             padding: 0;
         }
 
+        /* БАЗОВЫЕ СТИЛИ - ОБЩИЕ ДЛЯ ВСЕХ ТЕМ */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -89,6 +90,7 @@
         .function-info div {
             margin-bottom: 5px;
             font-size: 14px;
+            color: #333;
         }
 
         .function-actions {
@@ -265,6 +267,7 @@
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
+            color: #333;
         }
 
         .form-group input {
@@ -272,6 +275,8 @@
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            color: #333;
+            background-color: white;
         }
 
         .form-actions {
@@ -287,10 +292,210 @@
         .confirm-delete-modal p {
             margin-bottom: 20px;
             font-size: 16px;
+            color: #333;
+        }
+
+        /* ========== ТЕМНАЯ ТЕМА ========== */
+        body.dark-theme {
+            background-color: #1a1a1a !important;
+            color: #f0f0f0 !important;
+        }
+
+        /* Текст в темной теме */
+        .dark-theme,
+        .dark-theme h1,
+        .dark-theme .modal-content,
+        .dark-theme .modal-header h3,
+        .dark-theme .function-info div,
+        .dark-theme table,
+        .dark-theme .confirm-delete-modal p,
+        .dark-theme .form-group label {
+            color: #f0f0f0 !important;
+        }
+
+        /* Фоны в темной теме */
+        .dark-theme .container,
+        .dark-theme .function-card,
+        .dark-theme .modal-content,
+        .dark-theme .add-point-form {
+            background-color: #2d2d2d !important;
+            border: 1px solid #444 !important;
+        }
+
+        .dark-theme .points-table,
+        .dark-theme table {
+            background-color: #2d2d2d !important;
+            border: 1px solid #555 !important;
+        }
+
+        .dark-theme th {
+            background-color: #3d3d3d !important;
+            border-color: #555 !important;
+        }
+
+        .dark-theme td {
+            border-color: #555 !important;
+        }
+
+        .dark-theme .function-header {
+            border-bottom: 1px solid #444 !important;
+        }
+
+        /* Имя функции в темной теме */
+        .dark-theme .function-name {
+            color: #64b5f6 !important;
+        }
+
+        /* ID функции в темной теме */
+        .dark-theme .function-id {
+            background-color: #3d3d3d !important;
+            color: #aaa !important;
+        }
+
+        /* Формы в темной теме */
+        .dark-theme .form-group input,
+        .dark-theme select {
+            background-color: #3d3d3d !important;
+            color: #f0f0f0 !important;
+            border: 1px solid #555 !important;
+        }
+
+        .dark-theme .form-group input:focus,
+        .dark-theme select:focus {
+            border-color: #2196F3 !important;
+            outline: none !important;
+        }
+
+        /* Кнопки в темной теме */
+        .dark-theme .back-btn {
+            background-color: #666 !important;
+        }
+
+        .dark-theme .back-btn:hover {
+            background-color: #777 !important;
+        }
+
+        .dark-theme .view-btn {
+            background-color: #1565c0 !important;
+        }
+
+        .dark-theme .view-btn:hover {
+            background-color: #1976D2 !important;
+        }
+
+        .dark-theme .add-point-btn {
+            background-color: #F57C00 !important;
+        }
+
+        .dark-theme .add-point-btn:hover {
+            background-color: #EF6C00 !important;
+        }
+
+        .dark-theme .delete-point-btn {
+            background-color: #7B1FA2 !important;
+        }
+
+        .dark-theme .delete-point-btn:hover {
+            background-color: #6A1B9A !important;
+        }
+
+        .dark-theme .delete-btn {
+            background-color: #c62828 !important;
+        }
+
+        .dark-theme .delete-btn:hover {
+            background-color: #d32f2f !important;
+        }
+
+        /* Кнопки в модальных окнах */
+        .dark-theme .form-actions button[style*="background-color: #757575"] {
+            background-color: #666 !important;
+        }
+
+        .dark-theme .form-actions button[style*="background-color: #757575"]:hover {
+            background-color: #777 !important;
+        }
+
+        /* Иконки и кнопки закрытия */
+        .dark-theme .close-btn {
+            color: #aaa !important;
+        }
+
+        .dark-theme .close-btn:hover {
+            color: #fff !important;
+        }
+
+        /* Сообщения */
+        .dark-theme .success-message {
+            background-color: #1b5e20 !important;
+            color: #a5d6a7 !important;
+            border-color: #2e7d32 !important;
+        }
+
+        .dark-theme .error-message {
+            background-color: #b71c1c !important;
+            color: #ffcdd2 !important;
+            border-color: #c62828 !important;
+        }
+
+        /* Ошибки в форме */
+        .dark-theme #pointError,
+        .dark-theme #deletePointError {
+            background-color: #b71c1c !important;
+            color: #ffcdd2 !important;
+            border-color: #c62828 !important;
+        }
+
+        /* Загрузка */
+        .dark-theme .loading {
+            color: #aaa !important;
+        }
+
+        /* Сообщение о пустом списке */
+        .dark-theme .functions-list div[style*="grid-column: 1/-1"] {
+            color: #aaa !important;
+        }
+
+        /* Ховер эффекты для карточек в темной теме */
+        .dark-theme .function-card:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
+            background-color: #3d3d3d !important;
+        }
+
+        /* Тень для заголовков таблиц в темной теме */
+        .dark-theme th {
+            text-shadow: none !important;
+        }
+
+        /* Цвет strong элементов в информации о функции */
+        .dark-theme .function-info strong {
+            color: #e0e0e0 !important;
+        }
+
+        /* Цвет кнопок при наведении в темной теме */
+        .dark-theme button:hover {
+            filter: brightness(1.1) !important;
         }
     </style>
 </head>
 <body>
+    <script>
+        // Применяем тему при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+        });
+
+        function applyTheme(theme) {
+            document.body.classList.remove('light-theme', 'dark-theme');
+            if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.add('light-theme');
+            }
+        }
+    </script>
+
     <div class="container">
         <h1>Управление функциями</h1>
 
@@ -364,6 +569,10 @@
 
         // Загрузка функций при загрузке страницы
         window.onload = function() {
+            // Применяем тему еще раз на всякий случай
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+
             loadUserFunctions();
         };
 

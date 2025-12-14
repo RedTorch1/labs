@@ -311,10 +311,33 @@
             background-color: #3d3d3d !important;
         }
 
+        /* ИСПРАВЛЕНО: Стили для редактируемых ячеек */
+        .dark-theme .editable {
+            padding: 0 !important;
+        }
+
         .dark-theme .editable input {
-            background-color: #2d2d2d !important;
+            width: 100% !important;
+            background-color: #3d3d3d !important;
             color: #f0f0f0 !important;
-            border: none !important;
+            border: 1px solid #666 !important;
+            text-align: center !important;
+            box-sizing: border-box !important;
+            padding: 6px 4px !important;
+            font-size: 14px !important;
+            margin: 0 !important;
+            border-radius: 3px !important;
+        }
+
+        .dark-theme .editable input:focus {
+            outline: none !important;
+            border-color: #4d90fe !important;
+            box-shadow: 0 0 0 1px rgba(77, 144, 254, 0.3) !important;
+        }
+
+        /* Убедитесь, что фон ячейки совпадает с фоном инпута */
+        .dark-theme .editable {
+            background-color: transparent !important;
         }
 
         .dark-theme header {
@@ -356,8 +379,8 @@
             background-color: #EF6C00 !important;
         }
 
-        /* Формы в темной теме */
-        .dark-theme input {
+        /* Формы в темной теме (общие стили для инпутов) */
+        .dark-theme input:not(.editable input) {
             background-color: #3d3d3d !important;
             color: #f0f0f0 !important;
             border: 1px solid #555 !important;

@@ -6,418 +6,461 @@
     <title>Операции с функциями</title>
     <meta charset="UTF-8">
     <style>
-        /* БАЗОВЫЕ СТИЛИ - ОБЩИЕ ДЛЯ ВСЕХ ТЕМ */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f2f5;
-            color: #333;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #ddd;
-        }
-
-        h1 {
-            margin: 0;
-            color: #333;
-        }
-
-        .back-btn {
-            padding: 8px 16px;
-            background-color: #757575;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .back-btn:hover {
-            background-color: #616161;
-        }
-
-        .operations-container {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .function-panel {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .function-panel h3 {
-            margin-top: 0;
-            color: #333;
-            text-align: center;
-        }
-
-        .controls {
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .controls button {
-            margin: 0 5px;
-            padding: 8px 16px;
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .controls button:hover {
-            background-color: #1976D2;
-        }
-
-        .function-table {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            color: #333;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #f2f2f2;
-            position: sticky;
-            top: 0;
-        }
-
-        .x-column {
-            background-color: #f9f9f9;
-            font-weight: bold;
-        }
-
-        .editable {
-            background-color: #fff;
-        }
-
-        .operations-panel {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .operation-btn {
-            padding: 12px 24px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .operation-btn:hover {
-            background-color: #45a049;
-        }
-
-        .result-panel {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            grid-column: 1 / -1;
-        }
-
-        .result-panel h3 {
-            margin-top: 0;
-            color: #333;
-            text-align: center;
-        }
-
-        .result-controls {
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .no-data {
-            text-align: center;
-            color: #999;
-            padding: 20px;
-            font-style: italic;
-        }
-
-        /* Модальные окна */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
-            color: #333;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-header h3 {
-            margin: 0;
-            color: #333;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #666;
-        }
-
-        .close-btn:hover {
-            color: #333;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .modal-buttons button {
-            flex: 1;
-            padding: 10px;
-        }
-
-        .btn-primary {
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .btn-primary:hover {
-            background-color: #1976D2;
-        }
-
-        .btn-success {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .btn-success:hover {
-            background-color: #45a049;
-        }
-
-        /* Стили для сообщений */
-        .message {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-            display: none;
-        }
-
-        .success-message {
-            background-color: #dff0d8;
-            color: #3c763d;
-            border: 1px solid #d6e9c6;
-        }
-
-        .error-message {
-            background-color: #f2dede;
-            color: #a94442;
-            border: 1px solid #ebccd1;
-        }
-
-        /* Стили для загрузки */
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 10px;
-            color: #666;
-            font-style: italic;
-        }
-
-        /* ========== ТЕМНАЯ ТЕМА ========== */
-        body.dark-theme {
-            background-color: #1a1a1a !important;
-            color: #f0f0f0 !important;
-        }
-
-        /* Текст в темной теме */
-        .dark-theme,
-        .dark-theme h1,
-        .dark-theme .function-panel h3,
-        .dark-theme .result-panel h3,
-        .dark-theme .modal-content,
-        .dark-theme .modal-header h3,
-        .dark-theme table,
-        .dark-theme .no-data,
-        .dark-theme .loading {
-            color: #f0f0f0 !important;
-        }
-
-        /* Фоны в темной теме */
-        .dark-theme .function-panel,
-        .dark-theme .result-panel,
-        .dark-theme .modal-content {
-            background-color: #2d2d2d !important;
-            border: 1px solid #444 !important;
-        }
-
-        .dark-theme .function-table,
-        .dark-theme table {
-            background-color: #2d2d2d !important;
-            border: 1px solid #555 !important;
-        }
-
-        .dark-theme th {
-            background-color: #3d3d3d !important;
-            border-color: #555 !important;
-        }
-
-        .dark-theme td {
-            border-color: #555 !important;
-        }
-
-        .dark-theme .x-column {
-            background-color: #3d3d3d !important;
-        }
-
-        .dark-theme .editable input {
-            background-color: #2d2d2d !important;
-            color: #f0f0f0 !important;
-            border: none !important;
-        }
-
-        .dark-theme header {
-            border-bottom: 2px solid #444 !important;
-        }
-
-        /* Кнопки в темной теме */
-        .dark-theme .back-btn {
-            background-color: #666 !important;
-        }
-
-        .dark-theme .back-btn:hover {
-            background-color: #777 !important;
-        }
-
-        .dark-theme .controls button,
-        .dark-theme .btn-primary,
-        .dark-theme .result-controls button {
-            background-color: #1565c0 !important;
-        }
-
-        .dark-theme .controls button:hover,
-        .dark-theme .btn-primary:hover,
-        .dark-theme .result-controls button:hover {
-            background-color: #1976D2 !important;
-        }
-
-        .dark-theme .btn-success {
-            background-color: #2e7d32 !important;
-        }
-
-        .dark-theme .btn-success:hover {
-            background-color: #388E3C !important;
-        }
-
-        /* Кнопки операций */
-        .dark-theme .operation-btn {
-            background-color: #2e7d32 !important;
-        }
-
-        .dark-theme .operation-btn:hover {
-            background-color: #388E3C !important;
-        }
-
-        /* Формы в темной теме */
-        .dark-theme input {
-            background-color: #3d3d3d !important;
-            color: #f0f0f0 !important;
-            border: 1px solid #555 !important;
-        }
-
-        .dark-theme input:focus {
-            border-color: #2196F3 !important;
-            outline: none !important;
-        }
-
-        /* Иконки и кнопки закрытия */
-        .dark-theme .close-btn {
-            color: #aaa !important;
-        }
-
-        .dark-theme .close-btn:hover {
-            color: #fff !important;
-        }
-
-        /* Сообщения */
-        .dark-theme .success-message {
-            background-color: #1b5e20 !important;
-            color: #a5d6a7 !important;
-            border-color: #2e7d32 !important;
-        }
-
-        .dark-theme .error-message {
-            background-color: #b71c1c !important;
-            color: #ffcdd2 !important;
-            border-color: #c62828 !important;
-        }
-
-        /* Загрузка */
-        .dark-theme .loading {
-            color: #aaa !important;
-        }
-
-        /* Нет данных */
-        .dark-theme .no-data {
-            color: #aaa !important;
-        }
+       /* БАЗОВЫЕ СТИЛИ - ОБЩИЕ ДЛЯ ВСЕХ ТЕМ */
+       body {
+           font-family: Arial, sans-serif;
+           margin: 0;
+           padding: 20px;
+           background-color: #f0f2f5;
+           color: #333;
+       }
+
+       .container {
+           max-width: 1400px;
+           margin: 0 auto;
+       }
+
+       header {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           margin-bottom: 30px;
+           padding-bottom: 15px;
+           border-bottom: 2px solid #ddd;
+       }
+
+       h1 {
+           margin: 0;
+           color: #333;
+       }
+
+       /* Общие стили для кнопок */
+       .controls button,
+       .result-controls button,
+       .btn-primary,
+       .btn-success,
+       .operation-btn,
+       .back-btn {
+           font-family: Arial, sans-serif;
+           cursor: pointer;
+           border: none;
+           border-radius: 4px;
+           transition: background-color 0.3s;
+           text-decoration: none;
+           display: inline-block;
+       }
+
+       /* Специфичные стили для разных типов кнопок */
+       .back-btn {
+           padding: 8px 16px;
+           background-color: #757575;
+           color: white;
+       }
+
+       .back-btn:hover {
+           background-color: #616161;
+       }
+
+       .controls button,
+       .result-controls button,
+       .btn-primary {
+           padding: 8px 16px;
+           background-color: #2196F3;
+           color: white;
+           margin: 0 5px;
+       }
+
+       .controls button:hover,
+       .result-controls button:hover,
+       .btn-primary:hover {
+           background-color: #1976D2;
+       }
+
+       .btn-success {
+           padding: 8px 16px;
+           background-color: #4CAF50;
+           color: white;
+       }
+
+       .btn-success:hover {
+           background-color: #45a049;
+       }
+
+       .operation-btn {
+           padding: 12px 24px;
+           background-color: #4CAF50;
+           color: white;
+           font-size: 16px;
+       }
+
+       .operation-btn:hover {
+           background-color: #45a049;
+       }
+
+       .operations-container {
+           display: grid;
+           grid-template-columns: 1fr auto 1fr;
+           gap: 30px;
+           margin-bottom: 30px;
+       }
+
+       .function-panel {
+           background: white;
+           padding: 20px;
+           border-radius: 8px;
+           box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+       }
+
+       .function-panel h3 {
+           margin-top: 0;
+           color: #333;
+           text-align: center;
+       }
+
+       .controls {
+           margin-bottom: 15px;
+           text-align: center;
+       }
+
+       .function-table {
+           max-height: 400px;
+           overflow-y: auto;
+           border: 1px solid #ddd;
+           border-radius: 4px;
+       }
+
+       table {
+           width: 100%;
+           border-collapse: collapse;
+           color: #333;
+       }
+
+       th, td {
+           border: 1px solid #ddd;
+           padding: 8px;
+           text-align: center;
+       }
+
+       th {
+           background-color: #f2f2f2;
+           position: sticky;
+           top: 0;
+       }
+
+       .x-column {
+           background-color: #f9f9f9;
+           font-weight: bold;
+       }
+
+       .editable {
+           background-color: #fff;
+           padding: 0 !important;
+       }
+
+       .editable input {
+           width: 100% !important;
+           background-color: #fff !important;
+           color: #333 !important;
+           border: 1px solid #ddd !important;
+           text-align: center !important;
+           box-sizing: border-box !important;
+           padding: 6px 4px !important;
+           font-size: 14px !important;
+           margin: 0 !important;
+           border-radius: 3px !important;
+       }
+
+       .editable input:focus {
+           outline: none !important;
+           border-color: #2196F3 !important;
+           box-shadow: 0 0 0 1px rgba(33, 150, 243, 0.3) !important;
+       }
+
+       .operations-panel {
+           display: flex;
+           flex-direction: column;
+           justify-content: center;
+           gap: 10px;
+       }
+
+       .result-panel {
+           background: white;
+           padding: 20px;
+           border-radius: 8px;
+           box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+           grid-column: 1 / -1;
+       }
+
+       .result-panel h3 {
+           margin-top: 0;
+           color: #333;
+           text-align: center;
+       }
+
+       .result-controls {
+           margin-bottom: 15px;
+           text-align: center;
+       }
+
+       .no-data {
+           text-align: center;
+           color: #999;
+           padding: 20px;
+           font-style: italic;
+       }
+
+       /* Модальные окна */
+       .modal {
+           display: none;
+           position: fixed;
+           top: 0;
+           left: 0;
+           width: 100%;
+           height: 100%;
+           background: rgba(0,0,0,0.5);
+           z-index: 1000;
+           justify-content: center;
+           align-items: center;
+       }
+
+       .modal-content {
+           background: white;
+           padding: 30px;
+           border-radius: 10px;
+           max-width: 400px;
+           width: 90%;
+           box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+           color: #333;
+       }
+
+       .modal-header {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           margin-bottom: 20px;
+       }
+
+       .modal-header h3 {
+           margin: 0;
+           color: #333;
+       }
+
+       .close-btn {
+           background: none;
+           border: none;
+           font-size: 24px;
+           cursor: pointer;
+           color: #666;
+       }
+
+       .close-btn:hover {
+           color: #333;
+       }
+
+       .modal-buttons {
+           display: flex;
+           gap: 10px;
+           margin-top: 20px;
+       }
+
+       .modal-buttons button {
+           flex: 1;
+           padding: 10px;
+       }
+
+       /* Стили для сообщений */
+       .message {
+           padding: 10px;
+           margin: 10px 0;
+           border-radius: 4px;
+           display: none;
+       }
+
+       .success-message {
+           background-color: #dff0d8;
+           color: #3c763d;
+           border: 1px solid #d6e9c6;
+       }
+
+       .error-message {
+           background-color: #f2dede;
+           color: #a94442;
+           border: 1px solid #ebccd1;
+       }
+
+       /* Стили для загрузки */
+       .loading {
+           display: none;
+           text-align: center;
+           padding: 10px;
+           color: #666;
+           font-style: italic;
+       }
+
+       /* ========== ТЕМНАЯ ТЕМА ========== */
+       body.dark-theme {
+           background-color: #1a1a1a !important;
+           color: #f0f0f0 !important;
+       }
+
+       /* Текст в темной теме */
+       .dark-theme,
+       .dark-theme h1,
+       .dark-theme .function-panel h3,
+       .dark-theme .result-panel h3,
+       .dark-theme .modal-content,
+       .dark-theme .modal-header h3,
+       .dark-theme table,
+       .dark-theme .no-data,
+       .dark-theme .loading {
+           color: #f0f0f0 !important;
+       }
+
+       /* Фоны в темной теме */
+       .dark-theme .function-panel,
+       .dark-theme .result-panel,
+       .dark-theme .modal-content {
+           background-color: #2d2d2d !important;
+           border: 1px solid #444 !important;
+       }
+
+       .dark-theme .function-table,
+       .dark-theme table {
+           background-color: #2d2d2d !important;
+           border: 1px solid #555 !important;
+       }
+
+       .dark-theme th {
+           background-color: #3d3d3d !important;
+           border-color: #555 !important;
+       }
+
+       .dark-theme td {
+           border-color: #555 !important;
+       }
+
+       .dark-theme .x-column {
+           background-color: #3d3d3d !important;
+       }
+
+       /* Стили для редактируемых ячеек в темной теме */
+       .dark-theme .editable {
+           background-color: transparent !important;
+           padding: 0 !important;
+       }
+
+       .dark-theme .editable input {
+           width: 100% !important;
+           background-color: #3d3d3d !important;
+           color: #f0f0f0 !important;
+           border: 1px solid #666 !important;
+           text-align: center !important;
+           box-sizing: border-box !important;
+           padding: 6px 4px !important;
+           font-size: 14px !important;
+           margin: 0 !important;
+           border-radius: 3px !important;
+       }
+
+       .dark-theme .editable input:focus {
+           outline: none !important;
+           border-color: #4d90fe !important;
+           box-shadow: 0 0 0 1px rgba(77, 144, 254, 0.3) !important;
+       }
+
+       .dark-theme header {
+           border-bottom: 2px solid #444 !important;
+       }
+
+       /* Кнопки в темной теме */
+       .dark-theme .back-btn {
+           background-color: #666 !important;
+           color: white !important;
+       }
+
+       .dark-theme .back-btn:hover {
+           background-color: #777 !important;
+       }
+
+       /* Кнопки контролов (Создать, Загрузить, Сохранить) */
+       .dark-theme .controls button,
+       .dark-theme .result-controls button,
+       .dark-theme .btn-primary {
+           background-color: #1565c0 !important;
+           color: white !important;
+           border: none !important;
+           border-radius: 4px !important;
+       }
+
+       .dark-theme .controls button:hover,
+       .dark-theme .result-controls button:hover,
+       .dark-theme .btn-primary:hover {
+           background-color: #1976D2 !important;
+       }
+
+       /* Кнопки операций (в модальном окне) */
+       .dark-theme .btn-success {
+           background-color: #2e7d32 !important;
+           color: white !important;
+       }
+
+       .dark-theme .btn-success:hover {
+           background-color: #388E3C !important;
+       }
+
+       /* Кнопки операций в центральной панели */
+       .dark-theme .operation-btn {
+           background-color: #2e7d32 !important;
+           color: white !important;
+       }
+
+       .dark-theme .operation-btn:hover {
+           background-color: #388E3C !important;
+       }
+
+       /* Формы в темной теме (общие стили для инпутов, кроме редактируемых) */
+       .dark-theme input:not(.editable input) {
+           background-color: #3d3d3d !important;
+           color: #f0f0f0 !important;
+           border: 1px solid #555 !important;
+       }
+
+       .dark-theme input:not(.editable input):focus {
+           border-color: #2196F3 !important;
+           outline: none !important;
+       }
+
+       /* Иконки и кнопки закрытия */
+       .dark-theme .close-btn {
+           color: #aaa !important;
+       }
+
+       .dark-theme .close-btn:hover {
+           color: #fff !important;
+       }
+
+       /* Сообщения */
+       .dark-theme .success-message {
+           background-color: #1b5e20 !important;
+           color: #a5d6a7 !important;
+           border-color: #2e7d32 !important;
+       }
+
+       .dark-theme .error-message {
+           background-color: #b71c1c !important;
+           color: #ffcdd2 !important;
+           border-color: #c62828 !important;
+       }
+
+       /* Загрузка */
+       .dark-theme .loading {
+           color: #aaa !important;
+       }
+
+       /* Нет данных */
+       .dark-theme .no-data {
+           color: #aaa !important;
+       }
     </style>
 </head>
 <body>

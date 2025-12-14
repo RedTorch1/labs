@@ -34,19 +34,96 @@
             color: #333;
         }
 
+        /* Общие стили для кнопок */
+        .controls button,
+        .apply-controls button,
+        .btn-primary,
+        .btn-success,
+        .back-btn,
+        button {
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            color: white;
+        }
+
+        /* Специфичные стили для разных типов кнопок */
         .back-btn {
             padding: 8px 16px;
             background-color: #757575;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
         }
 
         .back-btn:hover {
             background-color: #616161;
+        }
+
+        /* Кнопки в контролах (Создать, Загрузить, Сохранить) */
+        .controls button,
+        .apply-controls button {
+            padding: 8px 16px;
+            background-color: #FF9800;
+            margin: 0 5px;
+        }
+
+        .controls button:hover,
+        .apply-controls button:hover {
+            background-color: #F57C00;
+        }
+
+        /* Кнопки в модальном окне */
+        .btn-primary {
+            flex: 1;
+            padding: 12px;
+            background-color: #2196F3;
+            font-size: 14px;
+        }
+
+        .btn-primary:hover {
+            background-color: #1976D2;
+        }
+
+        .btn-success {
+            flex: 1;
+            padding: 12px;
+            background-color: #4CAF50;
+            font-size: 14px;
+        }
+
+        .btn-success:hover {
+            background-color: #45a049;
+        }
+
+        /* Кнопки в таблице */
+        button[style*="background:#f44336"] {
+            background: #f44336 !important;
+            color: white !important;
+            border: none !important;
+            padding: 4px 8px !important;
+            border-radius: 3px !important;
+            cursor: pointer !important;
+            font-size: 12px !important;
+        }
+
+        button[style*="background:#f44336"]:hover {
+            background: #d32f2f !important;
+        }
+
+        button[onclick="addPoint()"] {
+            background: #757575 !important;
+            color: white !important;
+            border: none !important;
+            padding: 8px 16px !important;
+            border-radius: 4px !important;
+            cursor: pointer !important;
+            margin-top: 10px !important;
+        }
+
+        button[onclick="addPoint()"]:hover {
+            background: #616161 !important;
         }
 
         .study-container {
@@ -72,20 +149,6 @@
         .controls {
             margin-bottom: 15px;
             text-align: center;
-        }
-
-        .controls button {
-            margin: 0 5px;
-            padding: 8px 16px;
-            background-color: #FF9800;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .controls button:hover {
-            background-color: #F57C00;
         }
 
         .function-table {
@@ -119,14 +182,23 @@
             font-weight: bold;
         }
 
+        /* Стили для полей ввода в таблице */
         input[type="number"] {
             width: 100%;
             border: 1px solid #ddd;
             border-radius: 3px;
             text-align: center;
-            padding: 4px;
+            padding: 6px 4px;
             background: white;
             color: #333;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #FF9800;
+            box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3);
         }
 
         #chartCanvas {
@@ -152,20 +224,6 @@
             width: 120px;
             color: #333;
             background: white;
-        }
-
-        .apply-controls button {
-            background-color: #FF9800;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 0 5px;
-        }
-
-        .apply-controls button:hover {
-            background-color: #F57C00;
         }
 
         #result {
@@ -235,36 +293,6 @@
             display: flex;
             gap: 10px;
             margin-top: 20px;
-        }
-
-        .btn-primary {
-            flex: 1;
-            padding: 12px;
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .btn-primary:hover {
-            background-color: #1976D2;
-        }
-
-        .btn-success {
-            flex: 1;
-            padding: 12px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .btn-success:hover {
-            background-color: #45a049;
         }
 
         /* СООБЩЕНИЯ */
@@ -343,15 +371,17 @@
             background-color: #3d3d3d !important;
         }
 
+        /* Поля ввода в темной теме */
         .dark-theme input[type="number"] {
             background-color: #3d3d3d !important;
             color: #f0f0f0 !important;
-            border: 1px solid #555 !important;
+            border: 1px solid #666 !important;
         }
 
         .dark-theme input[type="number"]:focus {
             border-color: #FF9800 !important;
             outline: none !important;
+            box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
         }
 
         /* График */
@@ -369,21 +399,24 @@
         .dark-theme .apply-controls input {
             background-color: #3d3d3d !important;
             color: #f0f0f0 !important;
-            border: 1px solid #555 !important;
+            border: 1px solid #666 !important;
         }
 
         /* Кнопки в темной теме */
         .dark-theme .back-btn {
             background-color: #666 !important;
+            color: white !important;
         }
 
         .dark-theme .back-btn:hover {
             background-color: #777 !important;
         }
 
+        /* Кнопки контролов */
         .dark-theme .controls button,
         .dark-theme .apply-controls button {
             background-color: #F57C00 !important;
+            color: white !important;
         }
 
         .dark-theme .controls button:hover,
@@ -391,8 +424,10 @@
             background-color: #EF6C00 !important;
         }
 
+        /* Кнопки в модальном окне */
         .dark-theme .modal-buttons .btn-primary {
             background-color: #1565c0 !important;
+            color: white !important;
         }
 
         .dark-theme .modal-buttons .btn-primary:hover {
@@ -401,24 +436,26 @@
 
         .dark-theme .modal-buttons .btn-success {
             background-color: #2e7d32 !important;
+            color: white !important;
         }
 
         .dark-theme .modal-buttons .btn-success:hover {
             background-color: #388E3C !important;
         }
 
-        /* Кнопка удаления точки */
+        /* Кнопки в таблице в темной теме */
         .dark-theme button[style*="background:#f44336"] {
             background-color: #c62828 !important;
+            color: white !important;
         }
 
         .dark-theme button[style*="background:#f44336"]:hover {
             background-color: #d32f2f !important;
         }
 
-        /* Кнопка добавления точки */
         .dark-theme button[onclick="addPoint()"] {
             background-color: #666 !important;
+            color: white !important;
         }
 
         .dark-theme button[onclick="addPoint()"]:hover {
@@ -470,11 +507,6 @@
         /* Нет данных */
         .dark-theme .no-data {
             color: #aaa !important;
-        }
-
-        /* Кнопки в таблице */
-        .dark-theme button {
-            color: white !important;
         }
     </style>
 </head>
