@@ -232,6 +232,15 @@
             background-color: #1a1a1a !important;
             color: #f0f0f0 !important;
         }
+        /* Стили для кнопки Отмена с классом */
+        .back-btn.cancel-btn {
+            background-color: #f44336 !important;
+            color: white !important;
+        }
+
+        .back-btn.cancel-btn:hover {
+            background-color: #d32f2f !important;
+        }
 
         /* Текст в темной теме */
         .dark-theme,
@@ -344,6 +353,14 @@
         .dark-theme .loading {
             color: #aaa !important;
         }
+        /* Для темной темы */
+        .dark-theme .back-btn.cancel-btn {
+            background-color: #c62828 !important;
+        }
+
+        .dark-theme .back-btn.cancel-btn:hover {
+            background-color: #d32f2f !important;
+        }
     </style>
 </head>
 <body>
@@ -424,7 +441,7 @@
             <!-- КОНЕЦ БЛОКА С КНОПКАМИ -->
 
             <div style="margin-top: 20px;">
-                <button type="button" onclick="goBack()" class="back-btn">Назад</button>
+                <button onclick="goBack()" class="back-btn" id="backButton">Назад</button>
             </div>
         </form>
     </div>
@@ -447,9 +464,10 @@
         // Получаем контекст приложения
         const contextPath = '<%= request.getContextPath() %>';
 
-        // Получаем параметры возврата
-        const returnTo = '<%= request.getParameter("returnTo") != null ? request.getParameter("returnTo") : "main" %>';
-        const panel = '<%= request.getParameter("panel") != null ? request.getParameter("panel") : "1" %>';
+        // Получаем параметры возврата из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const returnTo = urlParams.get('returnTo') || 'main';
+        const panel = urlParams.get('panel') || '1';
 
         console.log('Return parameters - returnTo:', returnTo, 'panel:', panel);
 
@@ -766,6 +784,7 @@
             return false;
         }
 
+        // Обновляем функцию showError для поддержки темной темы
         function showError(title, message) {
             const errorTitle = document.getElementById('errorTitle');
             const errorMessage = document.getElementById('errorMessage');
@@ -775,6 +794,15 @@
                 errorTitle.textContent = title;
                 errorMessage.textContent = message;
                 errorModal.style.display = 'flex';
+
+                // Устанавливаем цвет кнопки в модальном окне
+                const modalButton = errorModal.querySelector('button');
+                if (modalButton) {
+                    modalButton.style.backgroundColor = '#f44336';
+                    if (document.body.classList.contains('dark-theme')) {
+                        modalButton.style.backgroundColor = '#c62828';
+                    }
+                }
             } else {
                 console.error('Элементы модального окна не найдены');
                 alert(title + ': ' + message);
@@ -789,15 +817,37 @@
         }
 
         function goBack() {
-            if (returnTo === 'operations' || returnTo === 'differentiation') {
+            // Определяем, была ли страница открыта из другого окна
+            if (returnTo !== 'main') {
+                // Если открыта из другой страницы (operations, differentiation, study)
                 window.close();
             } else {
+                // Если открыта напрямую
                 window.location.href = contextPath + '/ui';
+            }
+        }
+        // Функция для обновления кнопки Назад (с использованием CSS класса)
+        function updateBackButton() {
+            const backButton = document.querySelector('.back-btn');
+            if (backButton) {
+                if (returnTo !== 'main') {
+                    // Меняем текст и добавляем класс для стилизации
+                    backButton.textContent = 'Отмена';
+                    backButton.classList.add('cancel-btn');
+                }
             }
         }
 
         // Загрузка списка функций при загрузке страницы
         window.onload = function() {
+            // Применяем тему при загрузке страницы
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+
+            // Обновляем кнопку "Назад"
+            updateBackButton();
+
+            // Загружаем список функций
             fetch(contextPath + '/ui/functions')
                 .then(response => {
                     if (!response.ok) {

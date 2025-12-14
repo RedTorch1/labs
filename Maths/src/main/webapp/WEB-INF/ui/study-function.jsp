@@ -545,6 +545,7 @@
                 <div class="controls">
                     <button onclick="createNewFunction()">Создать</button>
                     <button onclick="loadFunction()">Загрузить</button>
+                    <button onclick="loadFromDatabase()">Загрузить из базы</button>
                     <button onclick="downloadFunction('dat')">Сохранить</button>
                 </div>
                 <div id="functionLoading" class="loading">Загрузка...</div>
@@ -773,6 +774,12 @@
             openChildWindow(contextPath + '/ui/functions/create-from-arrays?returnTo=study&panel=1', 'createArrays');
         }
 
+        // НОВАЯ ФУНКЦИЯ: Загрузка функции из базы данных
+        function loadFromDatabase() {
+            closeCreateModal();
+            const url = contextPath + '/ui/manage-functions?mode=load&returnTo=study&panel=1';
+            openChildWindow(url, 'loadFromDbWindow');
+        }
         function createFromFunction() {
             closeCreateModal();
             openChildWindow(contextPath + '/ui/functions/create-from-function?returnTo=study&panel=1', 'createFunction');

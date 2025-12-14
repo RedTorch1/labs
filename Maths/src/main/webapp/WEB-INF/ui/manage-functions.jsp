@@ -294,6 +294,14 @@
             font-size: 16px;
             color: #333;
         }
+        .load-btn {
+            background-color: #4CAF50 !important;
+            color: white !important;
+        }
+
+        .load-btn:hover {
+            background-color: #45a049 !important;
+        }
 
         /* ========== ТЕМНАЯ ТЕМА ========== */
         body.dark-theme {
@@ -476,6 +484,13 @@
         .dark-theme button:hover {
             filter: brightness(1.1) !important;
         }
+        .dark-theme .load-btn {
+            background-color: #2e7d32 !important;
+        }
+
+        .dark-theme .load-btn:hover {
+            background-color: #388E3C !important;
+        }
     </style>
 </head>
 <body>
@@ -548,6 +563,12 @@
             // Останавливаем выполнение скрипта
             throw new Error('Пользователь не авторизован');
         }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode'); // 'load' или undefined
+        const returnTo = urlParams.get('returnTo'); // 'differentiation' или другая страница
+
+        console.log('Режим работы:', mode, 'Возврат на:', returnTo);
 
         // Устанавливаем имя пользователя если есть элемент
         const username = localStorage.getItem('username');
@@ -672,6 +693,23 @@
 
             console.log('Начинаем рендеринг функций:', functions.length);
 
+            // Проверяем режим работы
+            const isLoadMode = mode === 'load';
+
+            if (isLoadMode) {
+                // Заголовок для режима загрузки
+                const header = document.createElement('div');
+                header.style.cssText = 'grid-column: 1/-1; text-align: center; padding: 10px; margin-bottom: 20px; background-color: #e8f5e9; border-radius: 4px;';
+                header.innerHTML = '<h3>Выберите функцию для загрузки в приложение</h3><p>Функция будет загружена на страницу ' + (returnTo || 'дифференцирования') + '</p>';
+
+                if (document.body.classList.contains('dark-theme')) {
+                    header.style.backgroundColor = '#1b5e20';
+                    header.style.color = '#f0f0f0';
+                }
+
+                container.appendChild(header);
+            }
+
             functions.forEach(func => {
                 console.log('Обрабатываем функцию:', func);
 
@@ -733,34 +771,43 @@
                 const actions = document.createElement('div');
                 actions.className = 'function-actions';
 
-                // Кнопка "Просмотр точек"
-                const viewBtn = document.createElement('button');
-                viewBtn.className = 'view-btn';
-                viewBtn.textContent = 'Просмотр точек';
-                viewBtn.addEventListener('click', () => viewFunctionPoints(funcId));
+                // В режиме загрузки показываем только кнопку загрузки
+                if (isLoadMode) {
+                    const loadBtn = document.createElement('button');
+                    loadBtn.className = 'load-btn';
+                    loadBtn.textContent = 'Загрузить в приложение';
+                    loadBtn.style.backgroundColor = '#4CAF50';
+                    loadBtn.style.color = 'white';
+                    loadBtn.style.marginRight = '5px';
+                    loadBtn.addEventListener('click', () => loadFunctionToApp(func.id));
+                    actions.appendChild(loadBtn);
+                } else {
+                    // В обычном режиме показываем все кнопки
+                    const viewBtn = document.createElement('button');
+                    viewBtn.className = 'view-btn';
+                    viewBtn.textContent = 'Просмотр точек';
+                    viewBtn.addEventListener('click', () => viewFunctionPoints(funcId));
 
-                // Кнопка "Добавить точку"
-                const addPointBtn = document.createElement('button');
-                addPointBtn.className = 'add-point-btn';
-                addPointBtn.textContent = 'Добавить точку';
-                addPointBtn.addEventListener('click', () => addPointToFunction(funcId));
+                    const addPointBtn = document.createElement('button');
+                    addPointBtn.className = 'add-point-btn';
+                    addPointBtn.textContent = 'Добавить точку';
+                    addPointBtn.addEventListener('click', () => addPointToFunction(funcId));
 
-                // Кнопка "Удалить точку"
-                const deletePointBtn = document.createElement('button');
-                deletePointBtn.className = 'delete-point-btn';
-                deletePointBtn.textContent = 'Удалить точку';
-                deletePointBtn.addEventListener('click', () => deletePointFromFunction(funcId));
+                    const deletePointBtn = document.createElement('button');
+                    deletePointBtn.className = 'delete-point-btn';
+                    deletePointBtn.textContent = 'Удалить точку';
+                    deletePointBtn.addEventListener('click', () => deletePointFromFunction(funcId));
 
-                // Кнопка "Удалить функцию"
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'delete-btn';
-                deleteBtn.textContent = 'Удалить';
-                deleteBtn.addEventListener('click', () => deleteFunction(funcId));
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.textContent = 'Удалить';
+                    deleteBtn.addEventListener('click', () => deleteFunction(funcId));
 
-                actions.appendChild(viewBtn);
-                actions.appendChild(addPointBtn);
-                actions.appendChild(deletePointBtn);
-                actions.appendChild(deleteBtn);
+                    actions.appendChild(viewBtn);
+                    actions.appendChild(addPointBtn);
+                    actions.appendChild(deletePointBtn);
+                    actions.appendChild(deleteBtn);
+                }
 
                 // Собираем карточку
                 functionCard.appendChild(header);
@@ -1491,6 +1538,79 @@
             currentFunctionId = null;
         }
 
+        // В функции loadFunctionToApp добавьте передачу panel
+        async function loadFunctionToApp(functionId) {
+            console.log('Загрузка функции в приложение ID:', functionId);
+
+            try {
+                // Загружаем данные функции
+                const funcResponse = await fetch(contextPath + '/api/functions/' + functionId, {
+                    headers: getAuthHeaders(null)
+                });
+
+                if (!funcResponse.ok) throw new Error('Функция не найдена');
+                const func = await funcResponse.json();
+
+                // Загружаем точки функции
+                const pointsResponse = await fetch(contextPath + '/api/points/function?functionId=' + functionId, {
+                    headers: getAuthHeaders(null)
+                });
+
+                if (!pointsResponse.ok) throw new Error('Не удалось загрузить точки');
+                const points = await pointsResponse.json();
+
+                // Формируем данные для передачи
+                const functionData = {
+                    id: func.id,
+                    name: func.name,
+                    points: points,
+                    xValues: points.map(p => p.x || p.xValue),
+                    yValues: points.map(p => p.y || p.yValue),
+                    returnTo: returnTo || 'operations',
+                    panel: urlParams.get('panel') || '1', // Передаем номер панели
+                    source: 'database'
+                };
+
+                console.log('Данные для передачи:', functionData);
+
+                // Передаем данные в родительское окно
+                returnFunctionData(functionData);
+
+            } catch (error) {
+                console.error('Ошибка при загрузке функции:', error);
+                showError('Ошибка загрузки', error.message);
+            }
+        }
+
+        // Универсальная функция возврата данных
+        function returnFunctionData(data) {
+            console.log('Возвращаем данные для:', returnTo);
+
+            if (window.opener && !window.opener.closed) {
+                try {
+                    if (window.opener.handleFunctionData) {
+                        console.log('Используем handleFunctionData');
+                        window.opener.handleFunctionData(data);
+                        window.close();
+                        return true;
+                    } else if (window.opener.receiveFunctionData) {
+                        console.log('Используем receiveFunctionData');
+                        window.opener.receiveFunctionData(data);
+                        window.close();
+                        return true;
+                    }
+                } catch (e) {
+                    console.warn('Ошибка передачи данных:', e);
+                    // Продолжаем с localStorage
+                }
+            }
+
+            // Используем localStorage как запасной вариант
+            localStorage.setItem('createdFunctionData', JSON.stringify(data));
+            alert('Данные функции готовы для загрузки. Закройте это окно.');
+            return false;
+        }
+
         // Вспомогательные функции для показа сообщений
         function showSuccess(message) {
             const successEl = document.getElementById('successMessage');
@@ -1511,6 +1631,21 @@
                 errorEl.style.display = 'none';
             }, 5000);
         }
+        // Обновление кнопки "Назад" в зависимости от режима
+        document.addEventListener('DOMContentLoaded', function() {
+            const backButton = document.querySelector('.back-btn');
+            if (backButton) {
+                if (mode === 'load') {
+                    backButton.textContent = 'Отмена';
+                    backButton.href = 'javascript:void(0)';
+                    backButton.onclick = function() {
+                        window.close();
+                    };
+                } else {
+                    backButton.href = contextPath + '/ui';
+                }
+            }
+        });
     </script>
 </body>
 </html>

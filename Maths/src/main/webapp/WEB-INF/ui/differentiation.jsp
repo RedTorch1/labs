@@ -457,7 +457,8 @@
                 <h3>Исходная функция</h3>
                 <div class="controls">
                     <button onclick="createFunction()">Создать</button>
-                    <button onclick="loadFunction()">Загрузить</button>
+                    <button onclick="loadFunction()">Загрузить из файла</button>
+                    <button onclick="loadFromDatabase()">Загрузить из базы</button>
                     <button onclick="saveFunction()">Сохранить</button>
                 </div>
                 <div id="sourceLoading" class="loading">Загрузка...</div>
@@ -546,6 +547,12 @@
             closeCreateModal();
             const url = contextPath + '/ui/functions/create-from-function?returnTo=differentiation';
             openChildWindow(url, 'createWindow');
+        }
+
+        // НОВАЯ ФУНКЦИЯ: Загрузка функции из базы данных
+        function loadFromDatabase() {
+            const url = contextPath + '/ui/manage-functions?mode=load&returnTo=differentiation';
+            openChildWindow(url, 'loadFromDbWindow');
         }
 
         function openChildWindow(url, windowName) {

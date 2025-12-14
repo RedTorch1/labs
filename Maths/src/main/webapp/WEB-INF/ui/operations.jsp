@@ -498,6 +498,7 @@
                 <div class="controls">
                     <button onclick="createFunction(1)">Создать</button>
                     <button onclick="loadFunction(1)">Загрузить</button>
+                    <button onclick="loadFromDatabase(1)">Загрузить из базы</button>
                     <button onclick="saveFunction(1)">Сохранить</button>
                 </div>
                 <div id="function1Loading" class="loading">Загрузка...</div>
@@ -520,6 +521,7 @@
                 <div class="controls">
                     <button onclick="createFunction(2)">Создать</button>
                     <button onclick="loadFunction(2)">Загрузить</button>
+                    <button onclick="loadFromDatabase(2)">Загрузить из базы</button>
                     <button onclick="saveFunction(2)">Сохранить</button>
                 </div>
                 <div id="function2Loading" class="loading">Загрузка...</div>
@@ -606,6 +608,13 @@
             openChildWindow(url, 'createWindow' + currentFunctionPanel);
         }
 
+        // НОВАЯ ФУНКЦИЯ: Загрузка функции из базы данных
+        function loadFromDatabase(panelNumber) {
+            currentFunctionPanel = panelNumber; // Сохраняем номер панели
+            const url = contextPath + '/ui/manage-functions?mode=load&returnTo=operations&panel=' + panelNumber;
+            openChildWindow(url, 'loadFromDbWindow' + panelNumber);
+        }
+
         function openChildWindow(url, windowName) {
             // Закрываем предыдущее окно с таким же именем, если оно открыто
             if (activeChildWindows[windowName] && !activeChildWindows[windowName].closed) {
@@ -667,9 +676,9 @@
             console.log('Получены данные через handleFunctionData:', data);
 
             if (data.returnTo === 'operations') {
-                const panelNumber = data.panel || 1;
+                const panelNumber = data.panel || currentFunctionPanel || 1;
                 setFunctionData(parseInt(panelNumber), data);
-                showMessage('Функция успешно создана и загружена!', 'success');
+                showMessage('Функция успешно загружена из базы!', 'success');
             }
         };
 
@@ -677,7 +686,7 @@
         window.receiveFunctionData = function(panelNumber, data) {
             console.log('Получены данные для панели', panelNumber, ':', data);
             setFunctionData(panelNumber, data);
-            showMessage('Функция успешно создана и загружена!', 'success');
+            showMessage('Функция успешно загружена!', 'success');
         };
 
         function loadFunction(panelNumber) {
