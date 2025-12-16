@@ -13,7 +13,8 @@ public interface PointRepository extends JpaRepository<Point, Long> {
 
     Optional<Point> findByFunction_IdAndXvalue(Long functionId, BigDecimal xValue);
 
-
     // Удалить все точки по id функции
     void deleteByFunction_Id(Long functionId);
+
+
 }

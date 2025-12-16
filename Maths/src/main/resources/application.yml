@@ -1,4 +1,8 @@
 spring:
+  mvc:
+    view:
+      prefix: /WEB-INF/
+      suffix: .jsp
   datasource:
     url: jdbc:postgresql://localhost:5432/lab5
     username: postgres

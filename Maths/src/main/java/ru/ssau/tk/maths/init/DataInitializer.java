@@ -1,6 +1,8 @@
 package ru.ssau.tk.maths.init;
 
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.event.EventListener;
 import ru.ssau.tk.maths.entity.AppUser;
 import ru.ssau.tk.maths.entity.Function;
 import ru.ssau.tk.maths.entity.Point;
@@ -14,6 +16,31 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
 @Component
+public class DataInitializer {
+
+    private final AppUserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public DataInitializer(AppUserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void initData() {
+        if (userRepository.findByUsername("admin").isEmpty()) {
+            AppUser admin = new AppUser();
+            admin.setUsername("admin");
+            admin.setPasswordHash(passwordEncoder.encode("adminpass"));
+            admin.setRole("ROLE_ADMIN");
+            userRepository.save(admin);
+            System.out.println("✅ Создан тестовый пользователь: admin/adminpass");
+        }
+    }
+}
+
+
+/*@Component
 @Profile("!test")
 public class DataInitializer implements CommandLineRunner {
 
@@ -40,7 +67,10 @@ public class DataInitializer implements CommandLineRunner {
         if (optionalAdmin.isPresent()) {
             admin = optionalAdmin.get();
         } else {
-            admin = new AppUser("admin", passwordEncoder.encode("adminpass"), "ROLE_ADMIN");
+            admin = new AppUser(
+                    "admin",
+                    passwordEncoder.encode("pass"),
+                    "ROLE_ADMIN");
             userRepository.save(admin);
             System.out.println("Created default admin/adminpass");
         }
@@ -74,3 +104,4 @@ public class DataInitializer implements CommandLineRunner {
 
     }
 }
+*/

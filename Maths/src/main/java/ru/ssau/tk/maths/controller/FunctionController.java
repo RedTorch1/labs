@@ -1,5 +1,8 @@
 package ru.ssau.tk.maths.controller;
 
+import jakarta.servlet.http.HttpSession;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import ru.ssau.tk.maths.dto.FunctionDto;
 import ru.ssau.tk.maths.entity.Function;
 import ru.ssau.tk.maths.entity.AppUser;
@@ -15,7 +18,43 @@ import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RestController
+@Controller
+public class FunctionController {
+
+    private final FunctionService functionService;
+
+    public FunctionController(FunctionService functionService) {
+        this.functionService = functionService;
+    }
+
+    // 🔹 REST (оставляем)
+    @ResponseBody
+    @GetMapping("/api/functions")
+    public List<Function> apiFunctions(HttpSession session) {
+        AppUser user = (AppUser) session.getAttribute("user");
+        return functionService.getFunctionsByUser(user.getId());
+    }
+
+    // 🔹 JSP (НОВОЕ)
+    @GetMapping("/functions")
+    public String functionsPage(HttpSession session, Model model) {
+        AppUser user = (AppUser) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        model.addAttribute(
+                "functions",
+                functionService.getFunctionsByUser(user.getId())
+        );
+        model.addAttribute("user", user);
+
+        return "functions"; // functions.jsp
+    }
+}
+
+//Эта версия пока отодвинута(заменена на актуальную)
+/* @RestController
 @RequestMapping("/api/functions")
 public class FunctionController {
     private static final Logger LOG = LoggerFactory.getLogger(FunctionController.class);
@@ -79,4 +118,4 @@ public class FunctionController {
         functionRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
-}
+}*/

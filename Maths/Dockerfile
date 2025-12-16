@@ -11,6 +11,6 @@ FROM eclipse-temurin:21-jre
 #FROM openjdk:17-jdk-slim
 
 WORKDIR /app
-COPY target/maths-framework-1.0-SNAPSHOT.jar app.jar
+COPY target/maths-framework-1.0-SNAPSHOT.war app.war
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.war"]

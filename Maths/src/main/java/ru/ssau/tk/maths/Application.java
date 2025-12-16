@@ -11,9 +11,4 @@ public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
-
-    @Bean
-    CommandLineRunner test(PasswordEncoder encoder) {
-        return args -> System.out.println("PasswordEncoder OK: " + encoder);
-    }
 }

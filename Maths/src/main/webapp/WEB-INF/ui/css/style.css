@@ -1,0 +1,124 @@
+/* Темная тема по умолчанию */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+body.dark-theme {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #e0e0e0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1, h2, h3 {
+    color: inherit;
+    margin-bottom: 20px;
+}
+
+.pointsTable {
+    background: rgba(255,255,255,0.95);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.dark-theme .pointsTable {
+    background: rgba(45,45,45,0.95);
+}
+
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 15px; text-align: center; border-bottom: 1px solid #ddd; }
+th { background: linear-gradient(45deg, #4CAF50, #45a049); color: white; font-weight: 600; }
+tr:hover { background: rgba(76,175,80,0.1); }
+
+input[type="number"], input[type="text"], select {
+    width: 100%; padding: 12px; border: 2px solid #ddd;
+    border-radius: 8px; font-size: 16px; transition: all 0.3s;
+}
+
+input:focus { outline: none; border-color: #4CAF50; box-shadow: 0 0 0 3px rgba(76,175,80,0.1); }
+
+button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s;
+    margin: 5px;
+}
+
+.btn-primary { background: linear-gradient(45deg, #2196F3, #1976D2); color: white; }
+.btn-primary:hover { background: linear-gradient(45deg, #1976D2, #1565C0); transform: translateY(-2px); }
+.btn-success { background: linear-gradient(45deg, #4CAF50, #45a049); color: white; }
+.btn-danger { background: linear-gradient(45deg, #f44336, #d32f2f); color: white; }
+
+.modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); display: none;
+    justify-content: center; align-items: center; z-index: 1000;
+}
+
+.modal-content {
+    background: white; padding: 30px; border-radius: 16px;
+    max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.dark-theme .modal-content { background: #2d2d2d; color: #e0e0e0; }
+
+.back-btn {
+    display: inline-block; padding: 12px 24px;
+    background: rgba(255,255,255,0.2); color: white;
+    text-decoration: none; border-radius: 8px;
+    backdrop-filter: blur(10px);
+}
+
+.success-message {
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white; padding: 15px; border-radius: 8px; margin: 15px 0;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .container { padding: 10px; }
+    table { font-size: 14px; }
+    th, td { padding: 10px 5px; }
+}
+
+/* ССЫЛКИ-БУТОНЫ (как обычные кнопки) */
+.login-btn, .register-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.auth-buttons a:hover {
+    transform: translateY(-1px);
+}
+
+.dark-theme .login-btn {
+    background-color: #2e7d32 !important;
+}
+.dark-theme .login-btn:hover {
+    background-color: #388E3C !important;
+}
+.dark-theme .register-btn {
+    background-color: #1565c0 !important;
+}
+.dark-theme .register-btn:hover {
+    background-color: #1976D2 !important;
+}

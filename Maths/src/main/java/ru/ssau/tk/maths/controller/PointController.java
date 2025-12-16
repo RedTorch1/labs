@@ -1,5 +1,6 @@
 package ru.ssau.tk.maths.controller;
 
+import org.springframework.stereotype.Controller;
 import ru.ssau.tk.maths.dto.PointDto;
 import ru.ssau.tk.maths.entity.Point;
 import ru.ssau.tk.maths.repository.PointRepository;
@@ -13,8 +14,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RestController
-@RequestMapping("/api/functions/{functionId}/points")
+@Controller
+//@RequestMapping("/api/functions/{functionId}/points")
 public class PointController {
     private static final Logger LOG = LoggerFactory.getLogger(PointController.class);
 
