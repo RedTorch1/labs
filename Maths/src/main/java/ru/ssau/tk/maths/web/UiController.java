@@ -1,5 +1,6 @@
 package ru.ssau.tk.maths.web;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -8,6 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import ru.ssau.tk.maths.functions.TabulatedFunction;
 import ru.ssau.tk.maths.functions.factory.ArrayTabulatedFunctionFactory;
 import ru.ssau.tk.maths.functions.factory.TabulatedFunctionFactory;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -23,11 +28,22 @@ public class UiController {
 
     @GetMapping("/ui/functions/manage")
     public String manageFunctions(Model model) {
+        // ✅ ПРОСТЫЕ ДАННЫЕ ДЛЯ JSP
+        List<Map<String, Object>> simpleFunctions = List.of(
+                Map.of("id", 1, "name", "x²", "count", 5, "leftBound", 0.0, "rightBound", 4.0),
+                Map.of("id", 2, "name", "sin(x)", "count", 11, "leftBound", 0.0, "rightBound", 4.0)
+        );
+        model.addAttribute("functions", simpleFunctions);
+        return "functions/manage";
+    }
+
+   /* @GetMapping("/ui/functions/manage")
+    public String manageFunctions(Model model) {
         // ✅ ТОЛЬКО ТЕСТОВЫЕ ФУНКЦИИ - БЕЗ FunctionsIO!
         List<TabulatedFunction> functions = createTestFunctions();
         model.addAttribute("functions", functions);
         return "functions/manage";
-    }
+    } */
 
     @GetMapping("/ui") public String index() { return "index"; }
     @GetMapping("/ui/functions/create-from-function") public String createFromFunction() { return "functions/create-from-function"; }
@@ -95,4 +111,62 @@ public class UiController {
 
         return List.of(sqr, sin);
     }
+
+    // ✅ ДОБАВИТЬ В КОНЕЦ UiController
+    @GetMapping("/ui/manage-functions")
+    public String manageFunctionsLegacy(Model model,
+                                        @RequestParam Map<String, String> allParams) {
+        // Перенаправление на новый путь со ВСЕМИ параметрами
+        StringBuilder redirectUrl = new StringBuilder("/ui/functions/manage");
+        boolean firstParam = true;
+
+        for (Map.Entry<String, String> param : allParams.entrySet()) {
+            if (!param.getValue().isEmpty()) {
+                redirectUrl.append(firstParam ? "?" : "&")
+                        .append(param.getKey()).append("=").append(param.getValue());
+                firstParam = false;
+            }
+        }
+
+        return "redirect:" + redirectUrl.toString();
+    }
+
+    // ✅ ЛОГОУТ С РЕДИРЕКТОМ (НЕ JSON!)
+    @GetMapping("/api/auth/logout")
+    public String logout(HttpServletResponse response) {
+        System.out.println("👋 Пользователь вышел из системы");
+
+        // ✅ ОЧИСТКА COOKIES + localStorage (на фронте)
+        response.addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.addHeader("Pragma", "no-cache");
+        response.addHeader("Expires", "0");
+
+        // ✅ РЕДИРЕКТ НА LOGIN (НЕ JSON!)
+        return "redirect:/ui/login";
+    }
+
+    // ✅ POST версия тоже редирект
+    @PostMapping("/api/auth/logout")
+    public String logoutPost(HttpServletResponse response) {
+        return logout(response);
+    }
+
+
+
+    // ✅ ДОБАВИТЬ МЕТОДЫ
+    @DeleteMapping("/ui/api/functions/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteFunction(@PathVariable Long id) {
+        System.out.println("🗑️ Удалена функция ID: " + id);
+        return ResponseEntity.ok(Map.of("id", id, "success", true));
+    }
+
+    @PutMapping("/ui/api/functions/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateFunction(@PathVariable Long id, @RequestBody Map<String, Object> data) {
+        String name = (String) data.get("name");
+        System.out.println("✏️ Обновлена ID: " + id + " → " + name);
+        return ResponseEntity.ok(Map.of("id", id, "name", name, "success", true));
+    }
+
 }
